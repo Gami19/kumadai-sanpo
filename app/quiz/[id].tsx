@@ -12,7 +12,7 @@ export default function QuizRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: building?.name ?? 'クイズ', headerLargeTitleEnabled: true }} />
+      <Stack.Screen options={{ title: building?.name ?? 'クイズ' }} />
       <QuizPlay buildingId={id} />
     </>
   );

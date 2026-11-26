@@ -10,7 +10,6 @@ export default function NotebookTabLayout() {
         name="index"
         options={{
           title: 'さんぽ帳',
-          headerLargeTitleEnabled: true,
           headerRight: () => <DeviceOnlyMark />,
         }}
       />

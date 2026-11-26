@@ -55,8 +55,8 @@ export const theme = {
     title: 28,
     body: 17,
     caption: 13,
-    /** Bold 1ウェイト。本文には使わない。 */
-    heading: 'ZenMaruGothic_700Bold',
+    /** Bold 1ウェイト。本文には使わない。ttf の PostScript 名。 */
+    heading: 'ZenMaruGothic-Bold',
   },
   radius: {
     sm: 8,

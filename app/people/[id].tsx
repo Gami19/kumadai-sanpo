@@ -12,7 +12,7 @@ export default function PersonRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: person?.name ?? '人物', headerLargeTitleEnabled: true }} />
+      <Stack.Screen options={{ title: person?.name ?? '人物' }} />
       <PersonDetail id={id} />
     </>
   );

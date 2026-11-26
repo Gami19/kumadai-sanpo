@@ -17,7 +17,7 @@ export function DeviceOnlyMark() {
       }}
       style={styles.hit}
     >
-      <Icon name="iphone" color={theme.color.ink} />
+      <Icon name="lock" color={theme.color.ink} />
     </Pressable>
   );
 }

@@ -13,7 +13,7 @@ export default function BuildingRoute() {
   return (
     <>
       <Stack.Screen
-        options={{ title: building?.name ?? '建物', headerLargeTitleEnabled: true }}
+        options={{ title: building?.name ?? '建物' }}
       />
       <BuildingDetail id={id} />
     </>

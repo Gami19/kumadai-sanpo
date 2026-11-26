@@ -10,7 +10,10 @@ export type IconName =
   | 'heart'
   | 'heart.fill'
   | 'checkmark'
-  | 'arrow.uturn.backward';
+  | 'arrow.uturn.backward'
+  | 'star'
+  | 'star.fill'
+  | 'lock';
 
 const symbols = {
   'chevron.right': { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
@@ -21,6 +24,9 @@ const symbols = {
   'heart.fill': { ios: 'heart.fill', android: 'favorite', web: 'favorite' },
   checkmark: { ios: 'checkmark', android: 'check', web: 'check' },
   'arrow.uturn.backward': { ios: 'arrow.uturn.backward', android: 'undo', web: 'undo' },
+  star: { ios: 'star', android: 'star_border', web: 'star_border' },
+  'star.fill': { ios: 'star.fill', android: 'star', web: 'star' },
+  lock: { ios: 'lock', android: 'lock', web: 'lock' },
 } as const satisfies Record<IconName, { ios: SFSymbol; android: AndroidSymbol; web: AndroidSymbol }>;
 
 type Props = {

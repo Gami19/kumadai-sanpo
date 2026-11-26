@@ -32,7 +32,7 @@ const picturebookTheme = {
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    [theme.font.heading]: ZenMaruGothic_700Bold,
+    'ZenMaruGothic-Bold': ZenMaruGothic_700Bold,
   });
 
   useEffect(() => {

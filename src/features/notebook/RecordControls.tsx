@@ -240,12 +240,13 @@ const styles = StyleSheet.create({
     paddingVertical: theme.space.md,
     borderRadius: theme.radius.md,
     borderCurve: 'continuous',
-    backgroundColor: theme.color.press,
+    backgroundColor: theme.color.brick,
   },
   buttonLabel: {
-    color: theme.color.leafDark,
+    color: theme.color.white,
     fontSize: theme.font.body,
-    fontWeight: '600',
+    fontWeight: '700',
+    textAlign: 'center',
   },
   pressed: {
     opacity: 0.7,

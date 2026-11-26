@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EstimatedChip } from '@/components/EstimatedChip';
+import { MapThumb } from '@/components/MapThumb';
 import { ScreenLink } from '@/components/ScreenLink';
 import { SourceButton } from '@/components/SourceButton';
 import { designationLabel, spots } from '@/features/map/spots';
@@ -71,12 +72,19 @@ function BuildingBody({
 }) {
   return (
     <View style={styles.block}>
+      <View style={styles.hero}>
+        <MapThumb id={building.id} style={styles.heroImage} label={building.name} />
+        {building.positionEstimated ? (
+          <View style={styles.heroChip}>
+            <EstimatedChip />
+          </View>
+        ) : null}
+      </View>
       <Text style={styles.reading}>{building.reading}</Text>
       <View style={styles.badges}>
         <Text style={styles.badge}>{designationLabel(building.designation)}</Text>
         <Text style={styles.badge}>{building.campus}</Text>
       </View>
-      {building.positionEstimated ? <EstimatedChip /> : null}
       {building.heritageName.length > 0 ? (
         <View style={styles.block}>
           <Text style={styles.section}>文化財の名称</Text>
@@ -110,6 +118,19 @@ const styles = StyleSheet.create({
   },
   block: {
     gap: theme.space.sm,
+  },
+  hero: {
+    borderRadius: theme.radius.md,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+  },
+  heroImage: {
+    aspectRatio: 4 / 3,
+  },
+  heroChip: {
+    position: 'absolute',
+    left: theme.space.sm,
+    bottom: theme.space.sm,
   },
   reading: {
     color: theme.color.inkMuted,
