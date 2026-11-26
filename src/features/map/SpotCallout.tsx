@@ -1,6 +1,7 @@
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { EstimatedChip } from '@/components/EstimatedChip';
 import { theme } from '@/theme/tokens';
 
 type Props = {
@@ -17,11 +18,7 @@ export function SpotCallout({ id, name, designationLabel, estimated, onClose }: 
       <View style={styles.copy}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.meta}>{designationLabel}</Text>
-        {estimated ? (
-          <Text style={styles.estimate}>
-            位置は推定です。現地で確認できるまで、確定した場所としては扱いません。
-          </Text>
-        ) : null}
+        {estimated ? <EstimatedChip /> : null}
         <Link
           href={{ pathname: '/building/[id]', params: { id } }}
           asChild
@@ -74,11 +71,6 @@ const styles = StyleSheet.create({
   meta: {
     color: theme.color.inkMuted,
     fontSize: theme.font.caption,
-  },
-  estimate: {
-    color: theme.color.clay,
-    fontSize: theme.font.caption,
-    lineHeight: theme.font.caption + theme.space.xs,
   },
   open: {
     alignSelf: 'flex-start',

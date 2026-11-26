@@ -51,6 +51,9 @@ type Props = {
 };
 
 function bundledImageSize(source: number): Size | null {
+  if (typeof ReactNativeImage.resolveAssetSource !== 'function') {
+    return null;
+  }
   const resolved = ReactNativeImage.resolveAssetSource(source);
   const width = resolved?.width;
   const height = resolved?.height;

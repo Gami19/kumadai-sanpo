@@ -1,8 +1,10 @@
 import { useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/Icon';
+import { OSM_CREDIT } from '@/copy/notices';
 import { CampusSwitcher } from '@/features/map/CampusSwitcher';
 import { CategoryFilter } from '@/features/map/CategoryFilter';
 import { DevLocationToggle } from '@/features/map/DevLocationToggle';
@@ -15,6 +17,7 @@ import { SpotCallout } from '@/features/map/SpotCallout';
 import { designationLabel, mapSpots } from '@/features/map/spots';
 import { useMapLocation } from '@/features/map/useMapLocation';
 import { ZoomableCampusMap } from '@/features/map/ZoomableCampusMap';
+import { openInfo } from '@/lib/sheet/session';
 import { theme } from '@/theme/tokens';
 
 function routeParam(value: string | string[] | undefined): string | null {
@@ -150,8 +153,19 @@ export default function MapScreen() {
             onJump={jumpToUser}
           />
         </View>
-        <View pointerEvents="none" style={styles.creditWrap}>
-          <Text style={styles.credit}>地図データの出典：© OpenStreetMap contributors（ODbL）</Text>
+        <View pointerEvents="box-none" style={styles.creditWrap}>
+          <Text style={styles.credit}>{OSM_CREDIT}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="地図の出典を開く"
+            hitSlop={theme.space.sm}
+            onPress={() => {
+              openInfo('osm');
+            }}
+            style={styles.creditInfo}
+          >
+            <Icon name="info.circle" size={16} color={theme.color.inkMuted} />
+          </Pressable>
         </View>
         {selected ? (
           <SpotCallout
@@ -193,16 +207,24 @@ const styles = StyleSheet.create({
     left: theme.space.md,
     right: theme.space.md,
     bottom: theme.space.sm,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: theme.space.xs,
   },
   credit: {
-    overflow: 'hidden',
-    backgroundColor: theme.color.card,
-    color: theme.color.inkMuted,
+    color: theme.color.ink,
+    backgroundColor: theme.color.paper,
     fontSize: theme.font.caption,
     lineHeight: theme.font.caption + theme.space.xs,
     paddingHorizontal: theme.space.sm,
     paddingVertical: theme.space.xs,
-    borderRadius: theme.radius.md,
+  },
+  creditInfo: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.color.paper,
   },
 });

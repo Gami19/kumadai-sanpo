@@ -8,6 +8,9 @@ import {
   removeFavoriteBuilding,
   removeFavoritePerson,
   removeStamp,
+  restoreFavoriteBuilding,
+  restoreFavoritePerson,
+  restoreStamp,
   stampBuilding,
   subscribeNotebook,
 } from './storage';
@@ -27,9 +30,12 @@ export function useNotebook() {
     favoritePeople: current.data.favoritePeople,
     stampBuilding,
     removeStamp,
+    restoreStamp,
     addFavoriteBuilding,
     removeFavoriteBuilding,
+    restoreFavoriteBuilding,
     addFavoritePerson,
     removeFavoritePerson,
+    restoreFavoritePerson,
   };
 }

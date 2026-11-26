@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { GestureDetector, usePanGesture, useTapGesture } from 'react-native-gesture-handler';
 
+import { EstimatedChip } from '@/components/EstimatedChip';
 import { theme } from '@/theme/tokens';
 
 type PanGesture = ReturnType<typeof usePanGesture>;
@@ -55,7 +56,11 @@ export function MapPin({
         accessibilityLabel={estimated ? `${name}、位置は推定` : name}
         style={[styles.hit, { left, top }]}
       >
-        {estimated ? <Text style={styles.estimate}>推定</Text> : null}
+        {estimated ? (
+          <View pointerEvents="none" style={styles.estimate}>
+            <EstimatedChip interactive={false} />
+          </View>
+        ) : null}
         <View
           style={[
             styles.head,
@@ -79,32 +84,25 @@ const styles = StyleSheet.create({
   head: {
     width: HEAD,
     height: HEAD,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline * 2,
+    borderRadius: theme.radius.pill,
+    borderWidth: theme.border.mark,
   },
   headKnown: {
-    backgroundColor: theme.color.clay,
-    borderColor: theme.color.card,
+    backgroundColor: theme.color.brick,
+    borderColor: theme.color.paper,
   },
   headEstimated: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.clay,
+    backgroundColor: theme.color.paper,
+    borderColor: theme.color.brick,
     borderStyle: 'dashed',
   },
   headSelected: {
-    borderColor: theme.color.moss,
+    borderColor: theme.color.leafDark,
   },
   estimate: {
     position: 'absolute',
     bottom: HEAD + theme.space.xs,
     width: theme.space.xl + theme.space.lg,
-    textAlign: 'center',
-    color: theme.color.ink,
-    backgroundColor: theme.color.card,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
-    overflow: 'hidden',
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.space.xs,
+    alignItems: 'center',
   },
 });

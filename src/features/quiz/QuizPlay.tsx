@@ -1,7 +1,5 @@
-import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,7 +9,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EstimatedChip } from '@/components/EstimatedChip';
 import { ScreenLink } from '@/components/ScreenLink';
+import { SourceButton } from '@/components/SourceButton';
 import { useBuildings } from '@/lib/content/useBuildings';
 import { primaryQuestionsFor, type QuizQuestion } from '@/lib/content/quizzes';
 import { useQuizzes } from '@/lib/content/useQuizzes';
@@ -19,9 +19,6 @@ import { buildPlayQuestions, type PlayQuestion } from '@/lib/quiz/play';
 import { recordQuizResult } from '@/lib/quiz/results';
 import { questionsToClear, quizCleared, type QuizResult } from '@/lib/quiz/score';
 import { theme } from '@/theme/tokens';
-
-const ESTIMATED_POSITION_NOTE =
-  '位置は推定です。現地で確認できるまで、確定した場所としては扱いません。';
 
 type Phase = 'ask' | 'result';
 
@@ -47,14 +44,6 @@ function createSession(questions: Parameters<typeof buildPlayQuestions>[0]): Ses
   };
 }
 
-function goBack() {
-  if (router.canGoBack()) {
-    router.back();
-  } else {
-    router.replace('/building');
-  }
-}
-
 export function QuizPlay({ buildingId }: Props) {
   const insets = useSafeAreaInsets();
   const buildings = useBuildings();
@@ -72,22 +61,12 @@ export function QuizPlay({ buildingId }: Props) {
   return (
     <ScrollView
       ref={scrollRef}
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={[
         styles.content,
-        {
-          paddingTop: insets.top + theme.space.lg,
-          paddingBottom: insets.bottom + theme.space.xl,
-        },
+        { paddingBottom: insets.bottom + theme.space.xl },
       ]}
     >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="建物の一覧に戻る"
-        onPress={goBack}
-        style={styles.back}
-      >
-        <Text style={styles.backLabel}>一覧へ</Text>
-      </Pressable>
       {building == null ? (
         <Missing message="この番号の建物は、いまの内容にありません。" />
       ) : primary.length === 0 ? (
@@ -178,8 +157,7 @@ function QuizRound({
 
   return (
     <View style={styles.block}>
-      <Text style={styles.title}>{buildingName}</Text>
-      {positionEstimated ? <Text style={styles.estimate}>{ESTIMATED_POSITION_NOTE}</Text> : null}
+      {positionEstimated ? <EstimatedChip /> : null}
       {session.phase === 'result' ? (
         <Result
           buildingId={buildingId}
@@ -207,7 +185,7 @@ function Missing({ message }: { message: string }) {
     <View style={styles.block}>
       <Text style={styles.title}>クイズを始められません</Text>
       <Text style={styles.body}>{message}</Text>
-      <ScreenLink href="/building" label="建物の一覧へ" />
+      <ScreenLink href="/quiz" label="クイズ" />
     </View>
   );
 }
@@ -272,20 +250,7 @@ function QuestionStep({
           <Text style={styles.feedbackTitle}>{correct ? '正解です' : '不正解です'}</Text>
           <Text style={styles.section}>解説</Text>
           <Text style={styles.body}>{question.explanation}</Text>
-          <Text style={styles.section}>出典</Text>
-          {question.sources.map((source) => (
-            <Pressable
-              key={source.url}
-              accessibilityRole="link"
-              accessibilityLabel={`${source.title}を開く`}
-              onPress={() => {
-                void Linking.openURL(source.url);
-              }}
-              style={styles.source}
-            >
-              <Text style={styles.sourceLabel}>{source.title}</Text>
-            </Pressable>
-          ))}
+          <SourceButton sources={question.sources} />
           <Pressable
             accessibilityRole="button"
             onPress={onNext}
@@ -326,11 +291,11 @@ function Result({
         {total}問中{need}問以上でクリアです。何度でもやり直せます。
       </Text>
       {!clearedNow && saved?.cleared ? (
-        <Text style={styles.body}>以前のクリアは、この端末に残っています。</Text>
+        <Text style={styles.body}>以前のクリアは残っています。</Text>
       ) : null}
       {saved != null ? (
         <Text style={styles.body}>
-          この端末の最高点は {saved.bestCorrect} / {saved.total} です。
+          最高点は {saved.bestCorrect} / {saved.total} です。
         </Text>
       ) : null}
       <Pressable
@@ -341,7 +306,6 @@ function Result({
       >
         <Text style={styles.nextLabel}>もう一度挑戦する</Text>
       </Pressable>
-      <ScreenLink href="/building" label="建物の一覧へ" />
       <ScreenLink
         href={{ pathname: '/building/[id]', params: { id: buildingId } }}
         label="この建物の説明"
@@ -353,29 +317,16 @@ function Result({
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.lg,
     gap: theme.space.md,
-  },
-  back: {
-    alignSelf: 'flex-start',
-    paddingVertical: theme.space.sm,
-  },
-  backLabel: {
-    color: theme.color.moss,
-    fontSize: theme.font.body,
-    fontWeight: '700',
   },
   block: {
     gap: theme.space.sm,
   },
   title: {
     color: theme.color.ink,
+    fontFamily: theme.font.heading,
     fontSize: theme.font.title,
-    fontWeight: '700',
-  },
-  estimate: {
-    color: theme.color.clay,
-    fontSize: theme.font.caption,
-    lineHeight: theme.font.caption + theme.space.xs,
   },
   progress: {
     color: theme.color.moss,
@@ -442,19 +393,6 @@ const styles = StyleSheet.create({
     color: theme.color.ink,
     fontSize: theme.font.body,
     lineHeight: theme.font.body + theme.space.sm,
-  },
-  source: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.md,
-  },
-  sourceLabel: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '600',
   },
   next: {
     backgroundColor: theme.color.moss,

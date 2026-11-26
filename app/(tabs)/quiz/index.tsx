@@ -1,5 +1,5 @@
 import { BuildingQuizList } from '@/features/quiz/BuildingQuizList';
 
-export default function BuildingScreen() {
+export default function QuizScreen() {
   return <BuildingQuizList />;
 }

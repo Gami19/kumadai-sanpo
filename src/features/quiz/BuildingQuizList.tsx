@@ -1,32 +1,18 @@
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ScreenLink } from '@/components/ScreenLink';
-import { designationLabel } from '@/features/map/spots';
+import { EstimatedChip } from '@/components/EstimatedChip';
+import { Icon } from '@/components/Icon';
+import { MapThumb } from '@/components/MapThumb';
+import { haptics } from '@/lib/haptics';
 import { useBuildings } from '@/lib/content/useBuildings';
-import type { Building, BuildingCampus } from '@/lib/content/buildings';
+import type { Building, BuildingCampus, BuildingDesignation } from '@/lib/content/buildings';
 import { buildingsInCampusOrder } from '@/lib/quiz/order';
 import { useQuizResults } from '@/lib/quiz/results';
-import { formatQuizPlayedAt, type QuizResult } from '@/lib/quiz/score';
+import type { QuizResult } from '@/lib/quiz/score';
 import { theme } from '@/theme/tokens';
-
-const ESTIMATED_POSITION_NOTE =
-  '位置は推定です。現地で確認できるまで、確定した場所としては扱いません。';
-
-function scoreLabel(result: QuizResult | undefined, ready: boolean): string {
-  if (!ready) {
-    return '成績を読み込んでいます';
-  }
-  if (result == null) {
-    return 'まだ挑戦していません';
-  }
-  const when = formatQuizPlayedAt(result.playedAt);
-  const score = `最高 ${result.bestCorrect}/${result.total}`;
-  const head = result.cleared ? `クリア済み · ${score}` : score;
-  return when.length > 0 ? `${head} · 最終 ${when}` : head;
-}
 
 function groupByCampus(buildings: readonly Building[]): { campus: BuildingCampus; items: Building[] }[] {
   const groups: { campus: BuildingCampus; items: Building[] }[] = [];
@@ -41,75 +27,121 @@ function groupByCampus(buildings: readonly Building[]): { campus: BuildingCampus
   return groups;
 }
 
+function designationColor(designation: BuildingDesignation): string {
+  if (designation === '重要文化財') {
+    return theme.color.brick;
+  }
+  if (designation === '登録有形文化財') {
+    return theme.color.leafDark;
+  }
+  return theme.color.path;
+}
+
 export function BuildingQuizList() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const buildings = useBuildings();
   const { ready, results } = useQuizResults();
   const groups = useMemo(() => groupByCampus(buildings), [buildings]);
+  const tile = (width - theme.space.lg * 2 - theme.space.sm) / 2;
 
   return (
     <ScrollView
-      contentContainerStyle={[
-        styles.content,
-        {
-          paddingTop: insets.top + theme.space.lg,
-          paddingBottom: insets.bottom + theme.space.xl,
-        },
-      ]}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.space.xl }]}
     >
-      <Text style={styles.title}>建物のクイズ</Text>
-      <Text style={styles.lead}>
-        気になる建物を選んで、四択を三問解きます。三問中二問以上でクリアです。現地にいなくても解けて、成績はこの端末だけに残ります。
-      </Text>
       {groups.map((group) => (
         <View key={group.campus} style={styles.section}>
           <Text style={styles.sectionTitle}>{group.campus}</Text>
-          {group.items.map((building) => (
-            <BuildingRow
-              key={building.id}
-              building={building}
-              result={results[building.id]}
-              ready={ready}
-            />
-          ))}
+          <View style={styles.grid}>
+            {group.items.map((building) => (
+              <QuizTile
+                key={building.id}
+                building={building}
+                result={ready ? results[building.id] : undefined}
+                showScore={ready}
+                width={tile}
+              />
+            ))}
+          </View>
         </View>
       ))}
     </ScrollView>
   );
 }
 
-function BuildingRow({
+function QuizTile({
   building,
   result,
-  ready,
+  showScore,
+  width,
 }: {
   building: Building;
   result: QuizResult | undefined;
-  ready: boolean;
+  showScore: boolean;
+  width: number;
 }) {
-  const startLabel = result == null ? 'クイズを始める' : 'もう一度挑戦する';
+  const score =
+    showScore && result != null
+      ? `最高 ${result.bestCorrect} / ${result.total}${result.cleared ? '、クリア' : ''}`
+      : '未挑戦';
   return (
-    <View style={styles.card}>
-      <Text style={styles.name}>{building.name}</Text>
-      <Text style={styles.reading}>{building.reading}</Text>
-      <Text style={styles.meta}>{designationLabel(building.designation)}</Text>
-      {building.positionEstimated ? (
-        <Text style={styles.estimate}>{ESTIMATED_POSITION_NOTE}</Text>
-      ) : null}
-      <Text style={styles.score}>{scoreLabel(result, ready)}</Text>
-      <Link href={{ pathname: '/quiz/[id]', params: { id: building.id } }} asChild>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${building.name}のクイズ。${building.designation}。${building.positionEstimated ? '位置は推定。' : ''}${score}`}
+      onPress={() => {
+        haptics.select();
+        router.push({ pathname: '/quiz/[id]', params: { id: building.id } });
+      }}
+      style={({ pressed }) => [styles.tile, { width }, pressed && styles.pressed]}
+    >
+      <View style={styles.art}>
+        <MapThumb id={building.id} style={styles.thumb} label="" />
+        {building.positionEstimated ? (
+          <View style={styles.chip}>
+            <EstimatedChip interactive={false} />
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${building.name}の${startLabel}`}
-          style={({ pressed }) => [styles.start, pressed && styles.pressed]}
+          accessibilityLabel={`${building.name}の説明`}
+          hitSlop={theme.space.xs}
+          onPress={() => {
+            haptics.select();
+            router.push({ pathname: '/building/[id]', params: { id: building.id } });
+          }}
+          style={styles.info}
         >
-          <Text style={styles.startLabel}>{startLabel}</Text>
+          <Icon name="info.circle" size={20} color={theme.color.ink} />
         </Pressable>
-      </Link>
-      <ScreenLink
-        href={{ pathname: '/building/[id]', params: { id: building.id } }}
-        label="説明を見る"
-      />
+      </View>
+      <View style={styles.caption}>
+        <View style={[styles.dot, { backgroundColor: designationColor(building.designation) }]} />
+        <Text style={styles.name} numberOfLines={2}>
+          {building.name}
+        </Text>
+      </View>
+      {showScore ? (
+        <ScoreStars correct={result?.bestCorrect ?? 0} total={result?.total ?? 3} />
+      ) : (
+        <View style={styles.starSlot} />
+      )}
+    </Pressable>
+  );
+}
+
+function ScoreStars({ correct, total }: { correct: number; total: number }) {
+  const count = Math.max(total, 1);
+  return (
+    <View style={styles.stars}>
+      {Array.from({ length: count }, (_, index) => (
+        <Icon
+          key={index}
+          name={index < correct ? 'star.fill' : 'star'}
+          size={16}
+          color={index < correct ? theme.color.brick : theme.color.inkMuted}
+        />
+      ))}
     </View>
   );
 }
@@ -117,69 +149,82 @@ function BuildingRow({
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.sm,
     gap: theme.space.lg,
   },
-  title: {
-    color: theme.color.ink,
-    fontSize: theme.font.title,
-    fontWeight: '700',
-  },
-  lead: {
-    color: theme.color.inkMuted,
-    fontSize: theme.font.body,
-    lineHeight: theme.font.body + theme.space.sm,
-  },
   section: {
-    gap: theme.space.md,
+    gap: theme.space.sm,
   },
   sectionTitle: {
-    color: theme.color.moss,
+    color: theme.color.leafDark,
     fontSize: theme.font.body,
     fontWeight: '700',
   },
-  card: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: theme.space.sm,
-    padding: theme.space.md,
   },
-  name: {
-    color: theme.color.ink,
-    fontSize: theme.font.body,
-    fontWeight: '700',
-  },
-  reading: {
-    color: theme.color.inkMuted,
-    fontSize: theme.font.caption,
-  },
-  meta: {
-    color: theme.color.ink,
-    fontSize: theme.font.caption,
-  },
-  estimate: {
-    color: theme.color.clay,
-    fontSize: theme.font.caption,
-    lineHeight: theme.font.caption + theme.space.xs,
-  },
-  score: {
-    color: theme.color.inkMuted,
-    fontSize: theme.font.caption,
-  },
-  start: {
-    backgroundColor: theme.color.moss,
+  tile: {
+    gap: theme.space.xs,
     borderRadius: theme.radius.md,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.md,
+    borderCurve: 'continuous',
+    paddingBottom: theme.space.xs,
   },
   pressed: {
-    opacity: 0.75,
+    backgroundColor: theme.color.press,
   },
-  startLabel: {
-    color: theme.color.card,
+  art: {
+    borderRadius: theme.radius.md,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+  },
+  thumb: {
+    aspectRatio: 1,
+  },
+  chip: {
+    position: 'absolute',
+    left: theme.space.xs,
+    bottom: theme.space.xs,
+  },
+  info: {
+    position: 'absolute',
+    top: theme.space.xs,
+    right: theme.space.xs,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.color.paper,
+  },
+  caption: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.space.xs,
+    minHeight: 44,
+    paddingHorizontal: theme.space.xs,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 6,
+  },
+  name: {
+    flex: 1,
+    color: theme.color.ink,
+    fontFamily: theme.font.heading,
     fontSize: theme.font.body,
-    fontWeight: '700',
-    textAlign: 'center',
+    lineHeight: 22,
+  },
+  stars: {
+    flexDirection: 'row',
+    gap: theme.space.xs,
+    minHeight: 22,
+    paddingHorizontal: theme.space.xs,
+  },
+  starSlot: {
+    height: 22,
   },
 });

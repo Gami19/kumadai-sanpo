@@ -1,0 +1,78 @@
+{
+  "cropPx": 240,
+  "outputPx": 480,
+  "buildings": [
+    {
+      "id": "goko-kinenkan",
+      "campusId": "kurokami-north",
+      "x": 802.81,
+      "y": 664.63,
+      "left": 683,
+      "top": 545,
+      "cropPx": 240
+    },
+    {
+      "id": "kagaku-jikkenjo",
+      "campusId": "kurokami-north",
+      "x": 997.47,
+      "y": 667.01,
+      "left": 877,
+      "top": 547,
+      "cropPx": 240
+    },
+    {
+      "id": "honbu",
+      "campusId": "kurokami-south",
+      "x": 912.15,
+      "y": 148.08,
+      "left": 792,
+      "top": 28,
+      "cropPx": 240
+    },
+    {
+      "id": "kougaku-shiryokan",
+      "campusId": "kurokami-south",
+      "x": 727.09,
+      "y": 251.43,
+      "left": 607,
+      "top": 131,
+      "cropPx": 240
+    },
+    {
+      "id": "akamon",
+      "campusId": "kurokami-north",
+      "x": 714.29,
+      "y": 1198.43,
+      "left": 594,
+      "top": 1078,
+      "cropPx": 240
+    },
+    {
+      "id": "yamazaki-kinenkan",
+      "campusId": "honjo",
+      "x": 370.5,
+      "y": 820.26,
+      "left": 250,
+      "top": 700,
+      "cropPx": 240
+    },
+    {
+      "id": "ooe-campus",
+      "campusId": "ooe",
+      "x": 552.2,
+      "y": 812.72,
+      "left": 432,
+      "top": 693,
+      "cropPx": 240
+    },
+    {
+      "id": "yakuyo-shokubutsuen",
+      "campusId": "ooe",
+      "x": 1083.37,
+      "y": 640.75,
+      "left": 963,
+      "top": 521,
+      "cropPx": 240
+    }
+  ]
+}
