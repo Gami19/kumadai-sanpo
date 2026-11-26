@@ -44,3 +44,38 @@ export function translationBounds(
     maxY: Math.max(0, (fittedHeight * scale - containerHeight) / 2),
   };
 }
+
+/**
+ * 画面の中央へイラスト上の点を置く平行移動。
+ * 拡大の原点は画像の中心で、平行移動は拡大したあとの画面上の距離。
+ * 端の点は余白が出ない範囲までしか寄らない。
+ */
+export function focusTranslation(
+  containerWidth: number,
+  containerHeight: number,
+  fittedWidth: number,
+  fittedHeight: number,
+  imageWidth: number,
+  imageHeight: number,
+  pixelX: number,
+  pixelY: number,
+  scale: number,
+) {
+  'worklet';
+  if (imageWidth <= 0 || imageHeight <= 0 || fittedWidth <= 0 || fittedHeight <= 0) {
+    return { x: 0, y: 0 };
+  }
+  const offsetX = (pixelX / imageWidth) * fittedWidth - fittedWidth / 2;
+  const offsetY = (pixelY / imageHeight) * fittedHeight - fittedHeight / 2;
+  const { maxX, maxY } = translationBounds(
+    containerWidth,
+    containerHeight,
+    fittedWidth,
+    fittedHeight,
+    scale,
+  );
+  return {
+    x: clamp(-offsetX * scale, -maxX, maxX),
+    y: clamp(-offsetY * scale, -maxY, maxY),
+  };
+}

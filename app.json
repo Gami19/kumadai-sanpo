@@ -14,7 +14,20 @@
     },
     "plugins": [
       "expo-router",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "キャンパスの地図に、いまいる場所を表示するために使います。",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "locationFullAccuracyPermission": false,
+          "motionUsagePermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

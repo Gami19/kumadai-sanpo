@@ -100,6 +100,15 @@ export function illustrationSize(campusId: CampusId): { width: number; height: n
   return { width, height };
 }
 
+/** 下敷き範囲の中心。建物の座標ではなく、その地図の代表点。 */
+export function campusBoundsCenter(campusId: CampusId): LonLat {
+  const { north, south, west, east } = campusGeoref(campusId).underlay_bounds;
+  return {
+    lat: (north + south) / 2,
+    lon: (west + east) / 2,
+  };
+}
+
 /**
  * 緯度経度を下敷き画像のピクセルにする。
  * 西端・北端を原点に寄せてから係数を掛ける。定数が大きいので、そのまま足すと桁が落ちる。
