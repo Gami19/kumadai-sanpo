@@ -7,11 +7,12 @@
     "start": "expo start",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "check:data": "tsx scripts/check-georef.mjs && tsx scripts/check-buildings.mjs",
+    "check:data": "tsx scripts/check-georef.mjs && tsx scripts/check-buildings.mjs && tsx scripts/check-quizzes.mjs",
     "android": "expo start --android",
     "ios": "expo start --ios"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.26",
     "expo-constants": "~58.0.16",
     "expo-font": "~58.0.12",
