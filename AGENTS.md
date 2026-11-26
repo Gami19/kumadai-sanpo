@@ -26,7 +26,8 @@
 - 個人データ（お気に入り・訪問スタンプ）は端末内保存のみ。Cloudflareへ送らない
 - コンテンツ（建物・人物・イラスト）は Cloudflare から配信し、アプリ更新なしで差し替え可能にする
 
-## 主要コマンド（雛形作成後に実コマンドへ差し替える）
-- 起動：`npx expo start`
-- 型チェック：`npx tsc --noEmit`
-- Worker ローカル：`worker/` 配下で wrangler dev
+## 主要コマンド
+- 起動：`npm run start`（`npx expo start`）
+- 型チェック：`npm run typecheck`（`npx tsc --noEmit`）
+- Lint：`npm run lint`（`npx expo lint`）
+- Worker ローカル：未作成。コンテンツ配信の Worker を足すときは `worker/` 配下で wrangler dev
