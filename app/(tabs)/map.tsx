@@ -332,9 +332,10 @@ export default function MapScreen() {
             accessibilityLabel="地図の出典を開く"
             hitSlop={theme.space.sm}
             onPress={() => {
+              haptics.select();
               openInfo('osm');
             }}
-            style={styles.creditInfo}
+            style={({ pressed }) => [styles.creditInfo, pressed && styles.creditPressed]}
           >
             <Icon name="info.circle" size={theme.space.md + theme.space.xs} color={theme.color.ink} />
           </Pressable>
@@ -400,5 +401,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
     backgroundColor: theme.color.paper,
     boxShadow: theme.shadow.float,
+  },
+  creditPressed: {
+    opacity: theme.opacity.pressed,
   },
 });

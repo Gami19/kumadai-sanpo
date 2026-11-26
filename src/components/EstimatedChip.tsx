@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ESTIMATED_LABEL, notices } from '@/copy/notices';
+import { haptics } from '@/lib/haptics';
 import { openInfo } from '@/lib/sheet/session';
 import { theme } from '@/theme/tokens';
 
@@ -27,6 +28,7 @@ export function EstimatedChip({ interactive = true }: Props) {
       accessibilityLabel="位置は推定"
       accessibilityHint={note}
       onPress={() => {
+        haptics.select();
         openInfo('estimated');
       }}
       style={({ pressed }) => [styles.hit, pressed && styles.pressed]}
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
   hit: {
     alignSelf: 'flex-start',
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: theme.hit,
     paddingHorizontal: theme.space.sm,
     borderRadius: theme.radius.pill,
     borderCurve: 'continuous',

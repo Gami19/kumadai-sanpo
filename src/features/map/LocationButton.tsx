@@ -173,6 +173,6 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: theme.opacity.pressed,
   },
 });

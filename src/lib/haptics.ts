@@ -15,10 +15,11 @@ export const haptics = {
   select() {
     onIos(() => Haptics.selectionAsync());
   },
-  /** スタンプを押したとき。重いものが置かれる感触。 */
+  /** スタンプが着地したとき。成功の触覚。この操作の触覚はこれ1回。 */
   stamp() {
-    onIos(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium));
+    onIos(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
   },
+  /** スタンプやお気に入りを取り消したとき。軽い触覚。 */
   remove() {
     onIos(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
   },

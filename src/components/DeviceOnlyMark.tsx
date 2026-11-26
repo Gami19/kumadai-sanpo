@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet } from 'react-native';
 
+import { haptics } from '@/lib/haptics';
 import { openInfo } from '@/lib/sheet/session';
 import { theme } from '@/theme/tokens';
 
@@ -13,9 +14,10 @@ export function DeviceOnlyMark() {
       accessibilityLabel="この端末だけに保存。説明を開く"
       hitSlop={theme.space.sm}
       onPress={() => {
+        haptics.select();
         openInfo('device');
       }}
-      style={styles.hit}
+      style={({ pressed }) => [styles.hit, pressed && styles.pressed]}
     >
       <Icon name="lock" color={theme.color.ink} />
     </Pressable>
@@ -24,9 +26,12 @@ export function DeviceOnlyMark() {
 
 const styles = StyleSheet.create({
   hit: {
-    width: 44,
-    height: 44,
+    width: theme.hit,
+    height: theme.hit,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pressed: {
+    opacity: theme.opacity.pressed,
   },
 });

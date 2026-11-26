@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { haptics } from '@/lib/haptics';
 import { theme } from '@/theme/tokens';
 
 import { campuses } from './campuses';
@@ -84,8 +85,15 @@ function Chip({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
-      style={[styles.chip, selected ? styles.chipSelected : styles.chipIdle]}
+      onPress={() => {
+        haptics.select();
+        onPress();
+      }}
+      style={({ pressed }) => [
+        styles.chip,
+        selected ? styles.chipSelected : styles.chipIdle,
+        pressed && styles.chipPressed,
+      ]}
     >
       <Text style={[styles.label, selected ? styles.labelSelected : styles.labelIdle]}>{label}</Text>
     </Pressable>
@@ -109,27 +117,28 @@ const styles = StyleSheet.create({
     paddingBottom: theme.space.sm,
   },
   chip: {
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
+    borderRadius: theme.radius.pill,
     paddingVertical: theme.space.sm,
     paddingHorizontal: theme.space.md,
-    minHeight: theme.space.xl,
+    minHeight: theme.hit,
     justifyContent: 'center',
+    boxShadow: theme.shadow.float,
   },
   chipSelected: {
-    backgroundColor: theme.color.moss,
-    borderColor: theme.color.moss,
+    backgroundColor: theme.color.brick,
   },
   chipIdle: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
+    backgroundColor: theme.color.paper,
+  },
+  chipPressed: {
+    opacity: theme.opacity.pressed,
   },
   label: {
     fontSize: theme.font.caption,
     fontWeight: '600',
   },
   labelSelected: {
-    color: theme.color.card,
+    color: theme.color.white,
   },
   labelIdle: {
     color: theme.color.ink,
