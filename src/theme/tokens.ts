@@ -10,6 +10,7 @@ export const theme = {
     ink: '#2A241C',
     inkMuted: '#6E6254',
     moss: '#3F6B4E',
+    mossWash: 'rgba(63, 107, 78, 0.22)',
     clay: '#C46A45',
     line: '#E2D3BC',
   },

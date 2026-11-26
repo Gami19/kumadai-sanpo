@@ -3,15 +3,18 @@ import { Image } from 'expo-image';
 import { useLayoutEffect, useState } from 'react';
 import { Image as ReactNativeImage, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { theme } from '@/theme/tokens';
 
 import { MapPin } from './MapPin';
-import { clamp, containSize, translationBounds, type Size } from './viewport';
+import { UserLocationMarker } from './UserLocationMarker';
+import { clamp, containSize, focusTranslation, translationBounds, type Size } from './viewport';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
+const FOCUS_SCALE = 2.5;
+const FOCUS_MS = 280;
 const PAN_SLOP = theme.space.sm * 2;
 
 export type CampusMapPin = {
@@ -22,6 +25,19 @@ export type CampusMapPin = {
   estimated: boolean;
 };
 
+export type UserMapLocation = {
+  x: number;
+  y: number;
+  radiusPx: number;
+};
+
+export type MapFocus = {
+  x: number;
+  y: number;
+  /** 同じ地点をもう一度中心にするとき、親が増やす。 */
+  token: number;
+};
+
 type Props = {
   source: number;
   accessibilityLabel: string;
@@ -30,6 +46,8 @@ type Props = {
   pins: readonly CampusMapPin[];
   selectedPinId: string | null;
   onSelectPin: (id: string) => void;
+  userLocation: UserMapLocation | null;
+  focus: MapFocus | null;
 };
 
 function bundledImageSize(source: number): Size | null {
@@ -50,6 +68,8 @@ export function ZoomableCampusMap({
   pins,
   selectedPinId,
   onSelectPin,
+  userLocation,
+  focus,
 }: Props) {
   const [imageSize, setImageSize] = useState<Size | null>(() => bundledImageSize(source));
   const [container, setContainer] = useState<Size>({ width: 0, height: 0 });
@@ -75,12 +95,39 @@ export function ZoomableCampusMap({
   const pinchScaleAtStart = useSharedValue(1);
   const panOriginX = useSharedValue(0);
   const panOriginY = useSharedValue(0);
+  const focusToken = focus?.token ?? 0;
+  const focusX = focus?.x ?? 0;
+  const focusY = focus?.y ?? 0;
 
   useLayoutEffect(() => {
     containerWidth.value = container.width;
     containerHeight.value = container.height;
     fittedWidth.value = fitted.width;
     fittedHeight.value = fitted.height;
+    if (container.width <= 0 || fitted.width <= 0 || imageWidth <= 0 || imageHeight <= 0) {
+      return;
+    }
+    // 緯度経度の更新では動かさない。ボタンで token が増えたときだけ中心へ寄る。
+    if (focusToken > 0) {
+      const next = focusTranslation(
+        container.width,
+        container.height,
+        fitted.width,
+        fitted.height,
+        imageWidth,
+        imageHeight,
+        focusX,
+        focusY,
+        FOCUS_SCALE,
+      );
+      scale.value = withTiming(FOCUS_SCALE, { duration: FOCUS_MS });
+      translateX.value = withTiming(next.x, { duration: FOCUS_MS });
+      translateY.value = withTiming(next.y, { duration: FOCUS_MS });
+      savedScale.value = FOCUS_SCALE;
+      savedTranslateX.value = next.x;
+      savedTranslateY.value = next.y;
+      return;
+    }
     scale.value = MIN_SCALE;
     translateX.value = 0;
     translateY.value = 0;
@@ -96,6 +143,11 @@ export function ZoomableCampusMap({
     fitted.width,
     fittedHeight,
     fittedWidth,
+    focusToken,
+    focusX,
+    focusY,
+    imageHeight,
+    imageWidth,
     savedScale,
     savedTranslateX,
     savedTranslateY,
@@ -229,6 +281,17 @@ export function ZoomableCampusMap({
                 onPress={() => onSelectPin(pin.id)}
               />
             ))}
+            {userLocation ? (
+              <UserLocationMarker
+                x={userLocation.x}
+                y={userLocation.y}
+                radiusPx={userLocation.radiusPx}
+                imageWidth={imageWidth}
+                imageHeight={imageHeight}
+                fittedWidth={fitted.width}
+                fittedHeight={fitted.height}
+              />
+            ) : null}
           </Animated.View>
         ) : null}
       </View>
