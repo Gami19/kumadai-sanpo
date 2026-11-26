@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/immutability -- Reanimated の shared value は .value への代入で更新する */
 import { Image } from 'expo-image';
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Image as ReactNativeImage, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { theme } from '@/theme/tokens';
 
@@ -22,6 +23,8 @@ export type CampusMapPin = {
   name: string;
   x: number;
   y: number;
+  color: string;
+  muted: boolean;
   estimated: boolean;
 };
 
@@ -48,6 +51,10 @@ type Props = {
   onSelectPin: (id: string) => void;
   userLocation: UserMapLocation | null;
   focus: MapFocus | null;
+  /** 等倍のときの左右スワイプ。拡大中は地図の移動に譲る。 */
+  onSwipeCampus?: (direction: -1 | 1) => void;
+  /** 指で地図を動かした。追従をやめる。 */
+  onUserPan?: () => void;
 };
 
 function bundledImageSize(source: number): Size | null {
@@ -73,8 +80,22 @@ export function ZoomableCampusMap({
   onSelectPin,
   userLocation,
   focus,
+  onSwipeCampus,
+  onUserPan,
 }: Props) {
-  const [imageSize, setImageSize] = useState<Size | null>(() => bundledImageSize(source));
+  const reducedMotion = useReducedMotion();
+  const appliedFocusToken = useRef(-1);
+  const [imageSize, setImageSize] = useState<Size | null>(() => {
+    const bundled = bundledImageSize(source);
+    if (bundled != null) {
+      return bundled;
+    }
+    // Web では resolveAssetSource が寸法を返さない。絵が 0 のまま描かれないのを避ける。
+    if (imageWidth > 0 && imageHeight > 0) {
+      return { width: imageWidth, height: imageHeight };
+    }
+    return null;
+  });
   const [container, setContainer] = useState<Size>({ width: 0, height: 0 });
   const fitted = containSize(
     container.width,
@@ -110,8 +131,30 @@ export function ZoomableCampusMap({
     if (container.width <= 0 || fitted.width <= 0 || imageWidth <= 0 || imageHeight <= 0) {
       return;
     }
-    // 緯度経度の更新では動かさない。ボタンで token が増えたときだけ中心へ寄る。
+    const duration = reducedMotion ? 0 : FOCUS_MS;
+    // 同じ token のまま座標だけ変わったときは、いまの倍率のまま中心を追う。
+    if (focusToken > 0 && focusToken === appliedFocusToken.current) {
+      const currentScale = scale.value < MIN_SCALE ? MIN_SCALE : scale.value;
+      const next = focusTranslation(
+        container.width,
+        container.height,
+        fitted.width,
+        fitted.height,
+        imageWidth,
+        imageHeight,
+        focusX,
+        focusY,
+        currentScale,
+      );
+      translateX.value = withTiming(next.x, { duration });
+      translateY.value = withTiming(next.y, { duration });
+      savedTranslateX.value = next.x;
+      savedTranslateY.value = next.y;
+      return;
+    }
+    // ボタンで token が増えたときだけ、寄って中心へ置く。
     if (focusToken > 0) {
+      appliedFocusToken.current = focusToken;
       const next = focusTranslation(
         container.width,
         container.height,
@@ -123,14 +166,15 @@ export function ZoomableCampusMap({
         focusY,
         FOCUS_SCALE,
       );
-      scale.value = withTiming(FOCUS_SCALE, { duration: FOCUS_MS });
-      translateX.value = withTiming(next.x, { duration: FOCUS_MS });
-      translateY.value = withTiming(next.y, { duration: FOCUS_MS });
+      scale.value = withTiming(FOCUS_SCALE, { duration });
+      translateX.value = withTiming(next.x, { duration });
+      translateY.value = withTiming(next.y, { duration });
       savedScale.value = FOCUS_SCALE;
       savedTranslateX.value = next.x;
       savedTranslateY.value = next.y;
       return;
     }
+    appliedFocusToken.current = 0;
     scale.value = MIN_SCALE;
     translateX.value = 0;
     translateY.value = 0;
@@ -150,6 +194,7 @@ export function ZoomableCampusMap({
     focusX,
     focusY,
     imageHeight,
+    reducedMotion,
     imageWidth,
     savedScale,
     savedTranslateX,
@@ -199,10 +244,32 @@ export function ZoomableCampusMap({
     maxPointers: 1,
     minDistance: PAN_SLOP,
     onActivate: (event) => {
+      if (onUserPan != null) {
+        scheduleOnRN(onUserPan);
+      }
       savedTranslateX.value = translateX.value;
       savedTranslateY.value = translateY.value;
       panOriginX.value = event.translationX;
       panOriginY.value = event.translationY;
+    },
+    onDeactivate: (event) => {
+      // 拡大中の移動はキャンパス切替にしない。等倍なら左右のフリックで隣へ。
+      if (event.canceled || scale.value > 1.05) {
+        return;
+      }
+      const dx = event.translationX;
+      const dy = event.translationY;
+      if (Math.abs(dx) < Math.abs(dy)) {
+        return;
+      }
+      const moved = Math.abs(dx) > 64;
+      const flicked = Math.abs(event.velocityX) > 900 && Math.abs(dx) > 28 && Math.abs(event.velocityX) > Math.abs(event.velocityY);
+      if (!moved && !flicked) {
+        return;
+      }
+      if (onSwipeCampus != null) {
+        scheduleOnRN(onSwipeCampus, dx < 0 ? 1 : -1);
+      }
     },
     onUpdate: (event) => {
       if (fittedWidth.value <= 0 || containerWidth.value <= 0) {
@@ -265,7 +332,11 @@ export function ZoomableCampusMap({
                 if (width <= 0 || height <= 0) {
                   return;
                 }
-                setImageSize((current) => current ?? { width, height });
+                setImageSize((current) =>
+                  current != null && current.width === width && current.height === height
+                    ? current
+                    : { width, height },
+                );
               }}
             />
             {pins.map((pin) => (
@@ -274,6 +345,8 @@ export function ZoomableCampusMap({
                 name={pin.name}
                 x={pin.x}
                 y={pin.y}
+                color={pin.color}
+                muted={pin.muted}
                 estimated={pin.estimated}
                 selected={pin.id === selectedPinId}
                 imageWidth={imageWidth}

@@ -22,4 +22,8 @@ export const haptics = {
   remove() {
     onIos(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
   },
+  /** シートが指を離して元の位置に戻ったとき。 */
+  settle() {
+    onIos(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
+  },
 };

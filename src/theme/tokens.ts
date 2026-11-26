@@ -36,6 +36,8 @@ export const theme = {
     separator: '#E4DCCB',
     white: '#FFFFFF',
     press: 'rgba(46, 42, 36, 0.08)',
+    /** シートの背後。地図は残す。 */
+    scrim: 'rgba(46, 42, 36, 0.28)',
     leafWash: 'rgba(70, 96, 30, 0.18)',
 
     card: '#FFFFFF',
@@ -63,6 +65,12 @@ export const theme = {
     md: 12,
     lg: 16,
     pill: 999,
+  },
+  /** 最小タップ。見た目がこれより小さいときは hitSlop で足す。 */
+  hit: 44,
+  shadow: {
+    /** 地図の上に浮く操作。濃い影で階層を作らない。 */
+    float: '0 2px 8px rgba(46, 42, 36, 0.12)',
   },
   border: {
     hairline: StyleSheet.hairlineWidth,
