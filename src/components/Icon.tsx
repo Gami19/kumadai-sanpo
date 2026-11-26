@@ -10,6 +10,9 @@ export type IconName =
   | 'heart'
   | 'heart.fill'
   | 'checkmark'
+  | 'xmark'
+  | 'arrow.clockwise'
+  | 'questionmark'
   | 'arrow.uturn.backward'
   | 'star'
   | 'star.fill'
@@ -26,6 +29,9 @@ const symbols = {
   heart: { ios: 'heart', android: 'favorite_border', web: 'favorite_border' },
   'heart.fill': { ios: 'heart.fill', android: 'favorite', web: 'favorite' },
   checkmark: { ios: 'checkmark', android: 'check', web: 'check' },
+  xmark: { ios: 'xmark', android: 'close', web: 'close' },
+  'arrow.clockwise': { ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' },
+  questionmark: { ios: 'questionmark', android: 'question_mark', web: 'question_mark' },
   'arrow.uturn.backward': { ios: 'arrow.uturn.backward', android: 'undo', web: 'undo' },
   star: { ios: 'star', android: 'star_border', web: 'star_border' },
   'star.fill': { ios: 'star.fill', android: 'star', web: 'star' },

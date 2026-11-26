@@ -26,4 +26,12 @@ export const haptics = {
   settle() {
     onIos(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
   },
+  /** クイズの正解。タイルの色とチェックと同じ瞬間。 */
+  success() {
+    onIos(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
+  },
+  /** クイズの不正解。タイルの色とバツと同じ瞬間。 */
+  error() {
+    onIos(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error));
+  },
 };
