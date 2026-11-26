@@ -5,14 +5,31 @@ import { Image as ReactNativeImage, StyleSheet, View, type LayoutChangeEvent } f
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
+import { theme } from '@/theme/tokens';
+
+import { MapPin } from './MapPin';
 import { clamp, containSize, translationBounds, type Size } from './viewport';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
+const PAN_SLOP = theme.space.sm * 2;
+
+export type CampusMapPin = {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  estimated: boolean;
+};
 
 type Props = {
   source: number;
   accessibilityLabel: string;
+  imageWidth: number;
+  imageHeight: number;
+  pins: readonly CampusMapPin[];
+  selectedPinId: string | null;
+  onSelectPin: (id: string) => void;
 };
 
 function bundledImageSize(source: number): Size | null {
@@ -25,7 +42,15 @@ function bundledImageSize(source: number): Size | null {
   return { width, height };
 }
 
-export function ZoomableCampusMap({ source, accessibilityLabel }: Props) {
+export function ZoomableCampusMap({
+  source,
+  accessibilityLabel,
+  imageWidth,
+  imageHeight,
+  pins,
+  selectedPinId,
+  onSelectPin,
+}: Props) {
   const [imageSize, setImageSize] = useState<Size | null>(() => bundledImageSize(source));
   const [container, setContainer] = useState<Size>({ width: 0, height: 0 });
   const fitted = containSize(
@@ -117,6 +142,7 @@ export function ZoomableCampusMap({ source, accessibilityLabel }: Props) {
 
   const pan = usePanGesture({
     maxPointers: 1,
+    minDistance: PAN_SLOP,
     onActivate: (event) => {
       savedTranslateX.value = translateX.value;
       savedTranslateY.value = translateY.value;
@@ -165,19 +191,20 @@ export function ZoomableCampusMap({ source, accessibilityLabel }: Props) {
         style={styles.viewport}
         onLayout={onLayout}
         collapsable={false}
-        accessibilityRole="image"
-        accessibilityLabel={accessibilityLabel}
       >
         {fitted.width > 0 ? (
           <Animated.View
-            pointerEvents="none"
+            pointerEvents="box-none"
             style={[{ width: fitted.width, height: fitted.height }, animatedStyle]}
           >
             <Image
               source={source}
               style={styles.image}
               contentFit="contain"
-              accessible={false}
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel={accessibilityLabel}
+              pointerEvents="none"
               onLoad={(event) => {
                 const { width, height } = event.source;
                 if (width <= 0 || height <= 0) {
@@ -186,6 +213,22 @@ export function ZoomableCampusMap({ source, accessibilityLabel }: Props) {
                 setImageSize((current) => current ?? { width, height });
               }}
             />
+            {pins.map((pin) => (
+              <MapPin
+                key={pin.id}
+                name={pin.name}
+                x={pin.x}
+                y={pin.y}
+                estimated={pin.estimated}
+                selected={pin.id === selectedPinId}
+                imageWidth={imageWidth}
+                imageHeight={imageHeight}
+                fittedWidth={fitted.width}
+                fittedHeight={fitted.height}
+                pan={pan}
+                onPress={() => onSelectPin(pin.id)}
+              />
+            ))}
           </Animated.View>
         ) : null}
       </View>
