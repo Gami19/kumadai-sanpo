@@ -34,4 +34,6 @@
 
 ## 状態
 - 仕様決め打ち済み。マップは4区画（黒髪北・黒髪南・本荘・大江）の下敷きとイラスト試作が確定済み
-- 下敷き・イラスト等の画像素材は別途追加予定（`data/geo/README.md` 参照）
+- 下敷き・イラストの画像素材は追加済み
+  - 下敷き（いずれも確定版）：黒髪北 kurokami-north-underlay.png、黒髪南 kurokami-south-underlay.png、本荘 v7 honjo-campus-underlay-v7.png、大江 v8 ooe-campus-underlay-v8.png（`data/geo/`）
+  - 区画イラスト（試作、区画名の4枚）：黒髪北 kurokami-north-illustrated.webp、黒髪南 kurokami-south-illustrated.webp、本荘 honjo-illustrated.webp、大江 ooe-illustrated.webp（`assets/illustrations/`）
