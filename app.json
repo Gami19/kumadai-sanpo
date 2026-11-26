@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "熊大さんぽ",
+    "slug": "kumadai-sanpo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "kumadai-sanpo",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
