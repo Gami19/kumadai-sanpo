@@ -6,13 +6,16 @@ import { theme } from '@/theme/tokens';
 type Props = {
   href: Href;
   label: string;
+  /** card は独立したボタン。text はカードの中に置く文のリンク。 */
+  tone?: 'card' | 'text';
 };
 
-export function ScreenLink({ href, label }: Props) {
+export function ScreenLink({ href, label, tone = 'card' }: Props) {
+  const text = tone === 'text';
   return (
     <Link href={href} asChild>
-      <Pressable style={styles.link}>
-        <Text style={styles.label}>{label}</Text>
+      <Pressable accessibilityRole="link" style={text ? styles.textLink : styles.link}>
+        <Text style={text ? styles.textLabel : styles.label}>{label}</Text>
       </Pressable>
     </Link>
   );
@@ -31,5 +34,14 @@ const styles = StyleSheet.create({
     color: theme.color.moss,
     fontSize: theme.font.body,
     fontWeight: '600',
+  },
+  textLink: {
+    alignSelf: 'flex-start',
+    paddingVertical: theme.space.xs,
+  },
+  textLabel: {
+    color: theme.color.moss,
+    fontSize: theme.font.body,
+    fontWeight: '700',
   },
 });
