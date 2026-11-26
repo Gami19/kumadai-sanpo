@@ -19,7 +19,11 @@ export type IconName =
   | 'lock'
   | 'location'
   | 'location.fill'
-  | 'location.slash';
+  | 'location.slash'
+  | 'calendar'
+  | 'clock'
+  | 'map'
+  | 'mappin';
 
 const symbols = {
   'chevron.right': { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
@@ -39,6 +43,10 @@ const symbols = {
   location: { ios: 'location', android: 'location_on', web: 'location_on' },
   'location.fill': { ios: 'location.fill', android: 'my_location', web: 'my_location' },
   'location.slash': { ios: 'location.slash', android: 'location_off', web: 'location_off' },
+  calendar: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
+  clock: { ios: 'clock', android: 'schedule', web: 'schedule' },
+  map: { ios: 'map', android: 'map', web: 'map' },
+  mappin: { ios: 'mappin', android: 'place', web: 'place' },
 } as const satisfies Record<IconName, { ios: SFSymbol; android: AndroidSymbol; web: AndroidSymbol }>;
 
 type Props = {

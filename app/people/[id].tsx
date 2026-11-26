@@ -1,5 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 
+import { PersonFavoriteButton } from '@/features/notebook/DetailActions';
 import { PersonDetail } from '@/features/people/PersonDetail';
 import { usePeople } from '@/lib/content/usePeople';
 
@@ -12,7 +13,15 @@ export default function PersonRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: person?.name ?? '人物' }} />
+      <Stack.Screen
+        options={{
+          title: person?.name ?? '人物',
+          headerRight: () =>
+            person == null ? null : (
+              <PersonFavoriteButton personId={person.id} personName={person.name} />
+            ),
+        }}
+      />
       <PersonDetail id={id} />
     </>
   );
