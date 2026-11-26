@@ -4,8 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenLink } from '@/components/ScreenLink';
 import { designationLabel, spots } from '@/features/map/spots';
-import { useBuildings } from '@/lib/content/useBuildings';
+import { BuildingRecordButtons } from '@/features/notebook/RecordControls';
+import { RelatedPeople } from '@/features/people/RelatedPeople';
 import type { Building } from '@/lib/content/buildings';
+import { useBuildings } from '@/lib/content/useBuildings';
 import { theme } from '@/theme/tokens';
 
 import { mapTargetForBuilding } from './mapTarget';
@@ -116,6 +118,8 @@ function BuildingBody({
         <Text style={styles.section}>見学</Text>
         <Text style={styles.body}>{visitText(building)}</Text>
       </View>
+      <RelatedPeople personIds={building.relatedPersonIds} />
+      <BuildingRecordButtons buildingId={building.id} buildingName={building.name} verbose />
       <View style={styles.block}>
         <Text style={styles.section}>出典</Text>
         {building.sources.map((source) => (
