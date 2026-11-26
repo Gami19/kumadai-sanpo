@@ -1,47 +1,74 @@
-import { useMemo, useRef, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  type ScrollViewInstance,
-} from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
+import Animated, {
+  Easing,
+  FadeIn,
+  ReduceMotion,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { EstimatedChip } from '@/components/EstimatedChip';
-import { ScreenLink } from '@/components/ScreenLink';
-import { SourceButton } from '@/components/SourceButton';
+import { Icon } from '@/components/Icon';
+import { haptics } from '@/lib/haptics';
 import { useBuildings } from '@/lib/content/useBuildings';
 import { primaryQuestionsFor, type QuizQuestion } from '@/lib/content/quizzes';
 import { useQuizzes } from '@/lib/content/useQuizzes';
 import { buildPlayQuestions, type PlayQuestion } from '@/lib/quiz/play';
 import { recordQuizResult } from '@/lib/quiz/results';
-import { questionsToClear, quizCleared, type QuizResult } from '@/lib/quiz/score';
+import { openSources } from '@/lib/sheet/session';
 import { theme } from '@/theme/tokens';
 
 type Phase = 'ask' | 'result';
+type Outcome = 'correct' | 'wrong';
 
 type Session = {
   round: readonly PlayQuestion[];
   cursor: number;
   picked: number | null;
-  correctCount: number;
+  outcomes: readonly Outcome[];
   phase: Phase;
+  /** 正解の自動送りを、出典を開いたので止めた。 */
+  paused: boolean;
 };
 
 type Props = {
   buildingId: string;
 };
 
-function createSession(questions: Parameters<typeof buildPlayQuestions>[0]): Session {
+/** 正解から次へ進むまで。計画の 0.8〜1.2 秒。 */
+const CORRECT_ADVANCE_MS = 800;
+/** 判定アイコンの出現。押した実感は 150ms 以内。 */
+const MARK_MS = 120;
+/** 結果の星。まれな結果表示なので、短い一回だけ。 */
+const RESULT_MS = 180;
+
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+
+function createSession(questions: readonly QuizQuestion[]): Session {
   return {
     round: buildPlayQuestions(questions),
     cursor: 0,
     picked: null,
-    correctCount: 0,
+    outcomes: [],
     phase: 'ask',
+    paused: false,
   };
+}
+
+function moveNext(current: Session, auto: boolean): Session {
+  if (current.phase !== 'ask' || current.picked == null) {
+    return current;
+  }
+  if (auto && (current.paused || current.outcomes[current.cursor] !== 'correct')) {
+    return current;
+  }
+  if (current.cursor >= current.round.length - 1) {
+    return { ...current, phase: 'result' };
+  }
+  return { ...current, cursor: current.cursor + 1, picked: null, paused: false };
 }
 
 export function QuizPlay({ buildingId }: Props) {
@@ -62,21 +89,14 @@ export function QuizPlay({ buildingId }: Props) {
     <ScrollView
       ref={scrollRef}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={[
-        styles.content,
-        { paddingBottom: insets.bottom + theme.space.xl },
-      ]}
+      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.space.xl }]}
     >
-      {building == null ? (
-        <Missing message="この番号の建物は、いまの内容にありません。" />
-      ) : primary.length === 0 ? (
-        <Missing message="この建物の問題は、いま用意されていません。" />
+      {building == null || primary.length === 0 ? (
+        <Missing />
       ) : (
         <QuizRound
           key={signature}
           buildingId={building.id}
-          buildingName={building.name}
-          positionEstimated={building.positionEstimated}
           primary={primary}
           scrollRef={scrollRef}
         />
@@ -87,328 +107,467 @@ export function QuizPlay({ buildingId }: Props) {
 
 function QuizRound({
   buildingId,
-  buildingName,
-  positionEstimated,
   primary,
   scrollRef,
 }: {
   buildingId: string;
-  buildingName: string;
-  positionEstimated: boolean;
   primary: readonly QuizQuestion[];
   scrollRef: { current: ScrollViewInstance | null };
 }) {
   const locking = useRef(false);
-  const attempt = useRef(0);
   const [session, setSession] = useState<Session>(() => createSession(primary));
-  const [saved, setSaved] = useState<QuizResult | null>(null);
+  const question = session.round[session.cursor];
+  const outcome = session.outcomes[session.cursor];
+  const revealedCorrect =
+    session.phase === 'ask' && session.picked != null && outcome === 'correct' && !session.paused;
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [session.cursor, session.phase, scrollRef]);
+
+  useEffect(() => {
+    if (!revealedCorrect) {
+      return undefined;
+    }
+    const id = setTimeout(() => {
+      locking.current = false;
+      setSession((current) => moveNext(current, true));
+    }, CORRECT_ADVANCE_MS);
+    return () => {
+      clearTimeout(id);
+    };
+  }, [revealedCorrect]);
 
   function retry() {
-    attempt.current += 1;
     locking.current = false;
-    setSaved(null);
+    haptics.select();
     setSession(createSession(primary));
-    scrollRef.current?.scrollTo({ y: 0, animated: false });
   }
 
   function pick(choiceIndex: number) {
     if (locking.current || session.phase !== 'ask' || session.picked != null) {
       return;
     }
-    const question = session.round[session.cursor];
-    const choice = question?.choices[choiceIndex];
-    if (question == null || choice == null) {
+    const current = session.round[session.cursor];
+    const choice = current?.choices[choiceIndex];
+    if (current == null || choice == null) {
       return;
     }
     locking.current = true;
-    const correctCount = session.correctCount + (choice.correct ? 1 : 0);
+    const nextOutcome: Outcome = choice.correct ? 'correct' : 'wrong';
+    if (choice.correct) {
+      haptics.success();
+    } else {
+      haptics.error();
+    }
+    const outcomes = [...session.outcomes, nextOutcome];
+    const correctCount = outcomes.filter((item) => item === 'correct').length;
     const last = session.cursor >= session.round.length - 1;
-    setSession({ ...session, picked: choiceIndex, correctCount });
+    setSession({ ...session, picked: choiceIndex, outcomes });
     if (last) {
-      const generation = attempt.current;
-      void recordQuizResult(buildingId, correctCount, session.round.length).then(
-        (result) => {
-          if (attempt.current === generation && result != null) {
-            setSaved(result);
-          }
-        },
-        () => undefined,
-      );
+      void recordQuizResult(buildingId, correctCount, session.round.length).catch(() => undefined);
     }
   }
 
   function goNext() {
-    if (session.picked == null) {
+    locking.current = false;
+    haptics.select();
+    setSession((current) => moveNext(current, false));
+  }
+
+  function showSources() {
+    if (question == null || question.sources.length === 0) {
       return;
     }
-    locking.current = false;
-    if (session.cursor >= session.round.length - 1) {
-      setSession({ ...session, phase: 'result' });
-    } else {
-      setSession({ ...session, cursor: session.cursor + 1, picked: null });
-    }
-    scrollRef.current?.scrollTo({ y: 0, animated: false });
+    haptics.select();
+    setSession((current) => {
+      if (
+        current.phase === 'ask' &&
+        current.picked != null &&
+        current.outcomes[current.cursor] === 'correct'
+      ) {
+        return { ...current, paused: true };
+      }
+      return current;
+    });
+    openSources(question.sources);
   }
 
-  const question = session.round[session.cursor];
   if (question == null) {
-    return <Missing message="この建物の問題は、いま用意されていません。" />;
+    return <Missing />;
   }
 
-  return (
-    <View style={styles.block}>
-      {positionEstimated ? <EstimatedChip /> : null}
-      {session.phase === 'result' ? (
-        <Result
-          buildingId={buildingId}
-          correct={session.correctCount}
-          total={session.round.length}
-          saved={saved}
-          onRetry={retry}
-        />
-      ) : (
-        <QuestionStep
-          question={question}
-          index={session.cursor}
-          total={session.round.length}
-          picked={session.picked}
-          onPick={pick}
-          onNext={goNext}
-        />
-      )}
-    </View>
-  );
-}
+  if (session.phase === 'result') {
+    const correct = session.outcomes.filter((item) => item === 'correct').length;
+    return <Result correct={correct} total={session.round.length} onRetry={retry} />;
+  }
 
-function Missing({ message }: { message: string }) {
-  return (
-    <View style={styles.block}>
-      <Text style={styles.title}>クイズを始められません</Text>
-      <Text style={styles.body}>{message}</Text>
-      <ScreenLink href="/quiz" label="クイズ" />
-    </View>
-  );
-}
+  const revealed = session.picked != null;
+  const correct = outcome === 'correct';
+  const showNext = revealed && (!correct || session.paused);
+  const announcement = !revealed ? '' : correct ? '正解' : `不正解。${question.explanation}`;
 
-function QuestionStep({
-  question,
-  index,
-  total,
-  picked,
-  onPick,
-  onNext,
-}: {
-  question: PlayQuestion;
-  index: number;
-  total: number;
-  picked: number | null;
-  onPick: (choiceIndex: number) => void;
-  onNext: () => void;
-}) {
-  const revealed = picked != null;
-  const pickedChoice = picked == null ? null : question.choices[picked];
-  const correct = pickedChoice?.correct === true;
   return (
     <View style={styles.block}>
-      <Text style={styles.progress}>
-        {index + 1} / {total}
-      </Text>
-      <Text style={styles.prompt}>{question.prompt}</Text>
-      <View style={styles.choices}>
-        {question.choices.map((choice, choiceIndex) => {
-          const mine = picked === choiceIndex;
-          const showCorrect = revealed && choice.correct;
-          const showWrong = revealed && mine && !choice.correct;
-          const mark = showCorrect ? '正解' : showWrong ? '不正解' : '';
-          return (
-            <Pressable
-              key={choice.text}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: revealed, selected: mine }}
-              accessibilityLabel={mark.length > 0 ? `${choice.text}。${mark}` : choice.text}
-              disabled={revealed}
-              onPress={() => {
-                onPick(choiceIndex);
-              }}
-              style={({ pressed }) => [
-                styles.choice,
-                showCorrect && styles.choiceCorrect,
-                showWrong && styles.choiceWrong,
-                pressed && !revealed && styles.pressed,
-              ]}
-            >
-              {mark.length > 0 ? (
-                <Text style={showCorrect ? styles.markCorrect : styles.markWrong}>{mark}</Text>
-              ) : null}
-              <Text style={styles.choiceLabel}>{choice.text}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      {revealed ? (
-        <View accessibilityLiveRegion="polite" style={styles.feedback}>
-          <Text style={styles.feedbackTitle}>{correct ? '正解です' : '不正解です'}</Text>
-          <Text style={styles.section}>解説</Text>
-          <Text style={styles.body}>{question.explanation}</Text>
-          <SourceButton sources={question.sources} />
+      <View style={styles.progressRow}>
+        <Progress total={session.round.length} cursor={session.cursor} outcomes={session.outcomes} />
+        {question.sources.length > 0 ? (
           <Pressable
             accessibilityRole="button"
-            onPress={onNext}
-            style={({ pressed }) => [styles.next, pressed && styles.pressed]}
+            accessibilityLabel={`出典 ${question.sources.length}件`}
+            onPress={showSources}
+            hitSlop={theme.space.xs}
+            style={({ pressed }) => [styles.source, pressed && styles.pressed]}
           >
-            <Text style={styles.nextLabel}>{index >= total - 1 ? '結果を見る' : '次の問題'}</Text>
+            <Icon name="link" size={theme.space.lg} color={theme.color.leafDark} />
+          </Pressable>
+        ) : null}
+      </View>
+      <Text selectable style={styles.prompt}>
+        {question.prompt}
+      </Text>
+      <View style={styles.choices}>
+        {question.choices.map((choice, choiceIndex) => (
+          <ChoiceTile
+            key={`${question.id}:${choiceIndex}`}
+            text={choice.text}
+            revealed={revealed}
+            correct={choice.correct}
+            picked={session.picked === choiceIndex}
+            onPress={() => {
+              pick(choiceIndex);
+            }}
+          />
+        ))}
+      </View>
+      {showNext ? (
+        <View style={styles.feedback}>
+          {!correct ? (
+            <Text
+              selectable
+              numberOfLines={2}
+              accessibilityLabel={question.explanation}
+              style={styles.explanation}
+            >
+              {question.explanation}
+            </Text>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="次へ"
+            onPress={goNext}
+            style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
+          >
+            <Text style={styles.actionLabel}>次へ</Text>
+            <Icon name="chevron.right" size={theme.space.lg} color={theme.color.white} />
           </Pressable>
         </View>
       ) : null}
+      <Text accessibilityLiveRegion="polite" style={styles.live}>
+        {announcement}
+      </Text>
     </View>
+  );
+}
+
+function Missing() {
+  return (
+    <View accessibilityRole="text" accessibilityLabel="問題がありません" style={styles.missing}>
+      <Icon name="questionmark" size={theme.space.xl} color={theme.color.inkMuted} />
+    </View>
+  );
+}
+
+function Progress({
+  total,
+  cursor,
+  outcomes,
+}: {
+  total: number;
+  cursor: number;
+  outcomes: readonly Outcome[];
+}) {
+  return (
+    <View
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${cursor + 1}問目、全${total}問`}
+      style={styles.dots}
+    >
+      {Array.from({ length: total }, (_, index) => {
+        const mark = outcomes[index];
+        const current = index === cursor && mark == null;
+        return (
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              mark === 'correct' && styles.dotCorrect,
+              mark === 'wrong' && styles.dotWrong,
+              current && styles.dotCurrent,
+              mark == null && !current && styles.dotFuture,
+            ]}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+function ChoiceTile({
+  text,
+  revealed,
+  correct,
+  picked,
+  onPress,
+}: {
+  text: string;
+  revealed: boolean;
+  correct: boolean;
+  picked: boolean;
+  onPress: () => void;
+}) {
+  const right = revealed && correct;
+  const wrong = revealed && picked && !correct;
+  const marked = right || wrong;
+  const label = right ? `${text}。正解` : wrong ? `${text}。不正解` : text;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: revealed, selected: picked }}
+      accessibilityLabel={label}
+      disabled={revealed}
+      onPress={onPress}
+      pressRetentionOffset={theme.space.md}
+      style={({ pressed }) => [
+        styles.choice,
+        right && styles.choiceCorrect,
+        wrong && styles.choiceWrong,
+        pressed && !revealed && styles.pressed,
+      ]}
+    >
+      <Text style={[styles.choiceLabel, marked && styles.choiceLabelOnFill]}>{text}</Text>
+      {marked ? (
+        <Animated.View entering={FadeIn.duration(MARK_MS).reduceMotion(ReduceMotion.System)}>
+          <Icon
+            name={right ? 'checkmark' : 'xmark'}
+            size={theme.space.lg}
+            color={theme.color.white}
+          />
+        </Animated.View>
+      ) : null}
+    </Pressable>
   );
 }
 
 function Result({
-  buildingId,
   correct,
   total,
-  saved,
   onRetry,
 }: {
-  buildingId: string;
   correct: number;
   total: number;
-  saved: QuizResult | null;
   onRetry: () => void;
 }) {
-  const clearedNow = quizCleared(correct, total);
-  const need = questionsToClear(total);
   return (
-    <View style={styles.block}>
-      <Text style={styles.score}>
-        {correct} / {total}
-      </Text>
-      <Text style={styles.body}>
-        {clearedNow ? 'クリアしました。' : '今回はクリアになりませんでした。'}
-      </Text>
-      <Text style={styles.body}>
-        {total}問中{need}問以上でクリアです。何度でもやり直せます。
-      </Text>
-      {!clearedNow && saved?.cleared ? (
-        <Text style={styles.body}>以前のクリアは残っています。</Text>
-      ) : null}
-      {saved != null ? (
-        <Text style={styles.body}>
-          最高点は {saved.bestCorrect} / {saved.total} です。
-        </Text>
-      ) : null}
+    <View style={styles.result}>
+      <ResultStars correct={correct} total={total} />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="もう一度挑戦する"
+        accessibilityLabel="もう一度"
         onPress={onRetry}
-        style={({ pressed }) => [styles.next, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
       >
-        <Text style={styles.nextLabel}>もう一度挑戦する</Text>
+        <Icon name="arrow.clockwise" size={theme.space.lg} color={theme.color.white} />
+        <Text style={styles.actionLabel}>もう一度</Text>
       </Pressable>
-      <ScreenLink
-        href={{ pathname: '/building/[id]', params: { id: buildingId } }}
-        label="この建物の説明"
-      />
     </View>
+  );
+}
+
+function ResultStars({ correct, total }: { correct: number; total: number }) {
+  const reduced = useReducedMotion();
+  const progress = useSharedValue(reduced ? 1 : 0);
+
+  useEffect(() => {
+    progress.set(
+      withTiming(1, {
+        duration: reduced ? 0 : RESULT_MS,
+        easing: EASE_OUT,
+        reduceMotion: ReduceMotion.System,
+      }),
+    );
+  }, [progress, reduced]);
+
+  const animated = useAnimatedStyle(() => ({
+    opacity: progress.get(),
+    transform: [{ scale: 0.94 + progress.get() * 0.06 }],
+  }));
+
+  return (
+    <Animated.View
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${correct}問正解、全${total}問`}
+      style={[styles.stars, animated]}
+    >
+      {Array.from({ length: Math.max(total, 1) }, (_, index) => (
+        <View
+          key={index}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Icon
+            name={index < correct ? 'star.fill' : 'star'}
+            size={theme.space.xl}
+            color={index < correct ? theme.color.brick : theme.color.inkMuted}
+          />
+        </View>
+      ))}
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: theme.space.lg,
-    paddingTop: theme.space.lg,
-    gap: theme.space.md,
+    paddingTop: theme.space.sm,
+    flexGrow: 1,
   },
   block: {
+    gap: theme.space.md,
+  },
+  progressRow: {
+    minHeight: theme.hit,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: theme.space.sm,
   },
-  title: {
-    color: theme.color.ink,
-    fontFamily: theme.font.heading,
-    fontSize: theme.font.title,
+  dots: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.sm,
   },
-  progress: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
+  dot: {
+    width: theme.space.sm,
+    height: theme.space.sm,
+    borderRadius: theme.space.xs,
+  },
+  dotCurrent: {
+    width: theme.space.md,
+    height: theme.space.md,
+    borderRadius: theme.space.sm,
+    backgroundColor: theme.color.ink,
+  },
+  dotCorrect: {
+    backgroundColor: theme.color.leafDark,
+  },
+  /** 丸が正解、四角が不正解。色が分からなくても形で区別する。 */
+  dotWrong: {
+    borderRadius: 0,
+    backgroundColor: theme.color.brick,
+  },
+  dotFuture: {
+    backgroundColor: 'transparent',
+    borderWidth: theme.border.mark,
+    borderColor: theme.color.inkMuted,
+  },
+  source: {
+    width: theme.hit,
+    height: theme.hit,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radius.pill,
   },
   prompt: {
     color: theme.color.ink,
-    fontSize: theme.font.body,
+    fontSize: theme.font.title,
+    lineHeight: theme.font.title + theme.space.sm,
     fontWeight: '700',
-    lineHeight: theme.font.body + theme.space.sm,
   },
   choices: {
     gap: theme.space.sm,
   },
   choice: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
-    gap: theme.space.xs,
+    minHeight: theme.hit + theme.space.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.sm,
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.md,
+    borderRadius: theme.radius.lg,
+    borderCurve: 'continuous',
+    backgroundColor: theme.color.white,
   },
   choiceCorrect: {
-    backgroundColor: theme.color.mossWash,
-    borderColor: theme.color.moss,
+    backgroundColor: theme.color.leafDark,
   },
   choiceWrong: {
-    borderColor: theme.color.clay,
+    backgroundColor: theme.color.brick,
   },
   pressed: {
-    opacity: 0.75,
-  },
-  markCorrect: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
-  },
-  markWrong: {
-    color: theme.color.clay,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
+    backgroundColor: theme.color.press,
   },
   choiceLabel: {
+    flex: 1,
     color: theme.color.ink,
     fontSize: theme.font.body,
     lineHeight: theme.font.body + theme.space.sm,
+    fontWeight: '600',
+  },
+  choiceLabelOnFill: {
+    color: theme.color.white,
   },
   feedback: {
     gap: theme.space.sm,
   },
-  feedbackTitle: {
-    color: theme.color.ink,
-    fontSize: theme.font.body,
-    fontWeight: '700',
-  },
-  section: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
-  },
-  body: {
+  explanation: {
     color: theme.color.ink,
     fontSize: theme.font.body,
     lineHeight: theme.font.body + theme.space.sm,
   },
-  next: {
-    backgroundColor: theme.color.moss,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.md,
+  action: {
+    minHeight: theme.hit + theme.space.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.space.sm,
+    paddingHorizontal: theme.space.lg,
+    borderRadius: theme.radius.lg,
+    borderCurve: 'continuous',
+    backgroundColor: theme.color.leafDark,
   },
-  nextLabel: {
-    color: theme.color.card,
+  actionPressed: {
+    opacity: 0.85,
+  },
+  actionLabel: {
+    color: theme.color.white,
     fontSize: theme.font.body,
     fontWeight: '700',
     textAlign: 'center',
   },
-  score: {
-    color: theme.color.ink,
-    fontSize: theme.font.title,
-    fontWeight: '700',
+  result: {
+    gap: theme.space.lg,
+    paddingTop: theme.space.xl,
+  },
+  stars: {
+    minHeight: theme.space.xl,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.space.sm,
+  },
+  missing: {
+    minHeight: theme.hit * 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  live: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    overflow: 'hidden',
+    color: theme.color.paper,
   },
 });
