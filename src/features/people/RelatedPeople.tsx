@@ -1,12 +1,16 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { ScreenLink } from '@/components/ScreenLink';
+import { NameSeal } from '@/components/NameSeal';
+import { haptics } from '@/lib/haptics';
 import { usePeople } from '@/lib/content/usePeople';
 import { theme } from '@/theme/tokens';
 
 type Props = {
   personIds: readonly string[];
 };
+
+const line = theme.font.body + theme.space.xs;
 
 export function RelatedPeople({ personIds }: Props) {
   const people = usePeople();
@@ -15,38 +19,77 @@ export function RelatedPeople({ personIds }: Props) {
     return person == null ? [] : [person];
   });
 
+  if (linked.length === 0) {
+    return null;
+  }
+
   return (
-    <View style={styles.block}>
-      <Text style={styles.section}>ゆかりの人物</Text>
-      {personIds.length === 0 ? (
-        <Text style={styles.body}>この地点に結びつけた人物は、いまの内容にはありません。</Text>
-      ) : null}
-      {personIds.length > 0 && linked.length === 0 ? (
-        <Text style={styles.body}>結びつけてあった人物が、いまの内容に見当たりません。</Text>
-      ) : null}
+    <ScrollView
+      horizontal
+      nestedScrollEnabled
+      showsHorizontalScrollIndicator={false}
+      style={styles.bleed}
+      contentContainerStyle={styles.row}
+    >
       {linked.map((person) => (
-        <ScreenLink
+        <Pressable
           key={person.id}
-          href={{ pathname: '/people/[id]', params: { id: person.id } }}
-          label={person.name}
-        />
+          accessibilityRole="button"
+          accessibilityLabel={`${person.name}。${person.role}`}
+          onPress={() => {
+            haptics.select();
+            router.push({ pathname: '/people/[id]', params: { id: person.id } });
+          }}
+          style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+        >
+          <NameSeal name={person.name} size={56} />
+          <Text style={styles.name} numberOfLines={2}>
+            {person.name}
+          </Text>
+          <Text style={styles.role} numberOfLines={1}>
+            {person.role}
+          </Text>
+        </Pressable>
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  block: {
+  bleed: {
+    marginHorizontal: -theme.space.lg,
+  },
+  row: {
+    paddingHorizontal: theme.space.lg,
     gap: theme.space.sm,
   },
-  section: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
+  card: {
+    width: 132,
+    alignItems: 'center',
+    gap: theme.space.xs,
+    paddingVertical: theme.space.sm,
+    paddingHorizontal: theme.space.sm,
+    borderRadius: theme.radius.md,
+    borderCurve: 'continuous',
+    backgroundColor: theme.color.white,
   },
-  body: {
+  pressed: {
+    backgroundColor: theme.color.press,
+  },
+  name: {
+    alignSelf: 'stretch',
+    minHeight: line * 2,
     color: theme.color.ink,
+    fontFamily: theme.font.heading,
     fontSize: theme.font.body,
-    lineHeight: theme.font.body + theme.space.sm,
+    lineHeight: line,
+    textAlign: 'center',
+  },
+  role: {
+    alignSelf: 'stretch',
+    color: theme.color.inkMuted,
+    fontSize: theme.font.caption,
+    lineHeight: theme.font.caption + theme.space.xs,
+    textAlign: 'center',
   },
 });
