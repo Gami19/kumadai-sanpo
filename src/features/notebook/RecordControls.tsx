@@ -1,34 +1,20 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { formatNotebookTime } from '@/lib/notebook/parse';
+import { useUndoToast } from '@/components/UndoToast';
+import { haptics } from '@/lib/haptics';
+import { formatNotebookTime, type FavoriteRecord, type StampRecord } from '@/lib/notebook/parse';
 import { NotebookStorageError } from '@/lib/notebook/storage';
 import { useNotebook } from '@/lib/notebook/useNotebook';
 import { theme } from '@/theme/tokens';
 
-function reportStorageError(error: unknown) {
+function storageMessage(error: unknown): string {
   const reason = error instanceof NotebookStorageError ? error.reason : 'save';
-  if (reason === 'load') {
-    Alert.alert(
-      '記録を読み込めませんでした',
-      'この端末に保存されているさんぽ帳を読めませんでした。',
-    );
-    return;
-  }
-  Alert.alert('保存できませんでした', 'この端末への記録に失敗しました。もう一度試してください。');
-}
-
-function confirmRemove(title: string, message: string, onConfirm: () => void) {
-  Alert.alert(title, message, [
-    { text: 'やめる', style: 'cancel' },
-    { text: '消す', style: 'destructive', onPress: onConfirm },
-  ]);
+  return reason === 'load' ? '記録を読み込めませんでした' : '保存できませんでした';
 }
 
 type BuildingProps = {
   buildingId: string;
   buildingName: string;
-  /** 詳細画面では、保存の説明を一緒に出す。 */
-  verbose?: boolean;
   /** お気に入り一覧では、スタンプの操作を繰り返さない。 */
   favoriteOnly?: boolean;
 };
@@ -36,28 +22,26 @@ type BuildingProps = {
 export function BuildingRecordButtons({
   buildingId,
   buildingName,
-  verbose = false,
   favoriteOnly = false,
 }: BuildingProps) {
   const notebook = useNotebook();
+  const showToast = useUndoToast();
   const stamp = notebook.stamps.find((item) => item.buildingId === buildingId) ?? null;
-  const favorite = notebook.favoriteBuildings.some((item) => item.id === buildingId);
-  const disabled = !notebook.ready || notebook.loadError;
+  const favorite = notebook.favoriteBuildings.find((item) => item.id === buildingId) ?? null;
+
+  const fail = (error: unknown) => {
+    showToast(storageMessage(error));
+  };
+
+  if (!notebook.ready) {
+    return null;
+  }
+  if (notebook.loadError) {
+    return <Text style={styles.warning}>記録を読み込めませんでした</Text>;
+  }
 
   return (
     <View style={styles.block}>
-      {verbose ? (
-        <View style={styles.block}>
-          <Text style={styles.section}>この端末の記録</Text>
-          <Text style={styles.caption}>
-            お気に入りと訪問スタンプは、この端末だけに保存します。サーバーへは送りません。位置は残りません。近くにいるだけでは、スタンプは付きません。
-          </Text>
-          {!notebook.ready ? <Text style={styles.caption}>記録を読み込んでいます。</Text> : null}
-          {notebook.loadError ? (
-            <Text style={styles.warning}>この端末の記録を読み込めませんでした。</Text>
-          ) : null}
-        </View>
-      ) : null}
       {favoriteOnly ? null : (
         <View style={styles.block}>
           <View style={styles.statusRow}>
@@ -76,47 +60,54 @@ export function BuildingRecordButtons({
             <RecordButton
               label="訪問した"
               accessibilityLabel={`${buildingName}に訪問スタンプを付ける`}
-              disabled={disabled}
               onPress={() => {
-                void notebook.stampBuilding(buildingId).catch(reportStorageError);
+                haptics.stamp();
+                void notebook.stampBuilding(buildingId).then(() => {
+                  showToast('スタンプを付けました', () =>
+                    notebook.removeStamp(buildingId).catch(fail),
+                  );
+                }, fail);
               }}
             />
           ) : (
             <RecordButton
               label="スタンプを消す"
               accessibilityLabel={`${buildingName}の訪問スタンプを消す`}
-              disabled={disabled}
               onPress={() => {
-                confirmRemove(
-                  '訪問スタンプを消しますか',
-                  `「${buildingName}」の訪問スタンプを、この端末から消します。`,
-                  () => {
-                    void notebook.removeStamp(buildingId).catch(reportStorageError);
-                  },
-                );
+                const saved: StampRecord = stamp;
+                haptics.remove();
+                void notebook.removeStamp(buildingId).then(() => {
+                  showToast('スタンプを消しました', () => notebook.restoreStamp(saved).catch(fail));
+                }, fail);
               }}
             />
           )}
         </View>
       )}
       <RecordButton
-        label={favorite ? 'お気に入りから外す' : 'お気に入りに入れる'}
+        label={favorite != null ? 'お気に入りから外す' : 'お気に入りに入れる'}
         accessibilityLabel={
-          favorite ? `${buildingName}のお気に入りを外す` : `${buildingName}をお気に入りに入れる`
+          favorite != null
+            ? `${buildingName}のお気に入りを外す`
+            : `${buildingName}をお気に入りに入れる`
         }
-        disabled={disabled}
         onPress={() => {
-          if (favorite) {
-            confirmRemove(
-              'お気に入りから外しますか',
-              `「${buildingName}」を、この端末のお気に入りから外します。`,
-              () => {
-                void notebook.removeFavoriteBuilding(buildingId).catch(reportStorageError);
-              },
-            );
+          if (favorite != null) {
+            const saved: FavoriteRecord = favorite;
+            haptics.remove();
+            void notebook.removeFavoriteBuilding(buildingId).then(() => {
+              showToast('お気に入りから外しました', () =>
+                notebook.restoreFavoriteBuilding(saved).catch(fail),
+              );
+            }, fail);
             return;
           }
-          void notebook.addFavoriteBuilding(buildingId).catch(reportStorageError);
+          haptics.select();
+          void notebook.addFavoriteBuilding(buildingId).then(() => {
+            showToast('お気に入りに入れました', () =>
+              notebook.removeFavoriteBuilding(buildingId).catch(fail),
+            );
+          }, fail);
         }}
       />
     </View>
@@ -126,49 +117,53 @@ export function BuildingRecordButtons({
 type PersonProps = {
   personId: string;
   personName: string;
-  verbose?: boolean;
 };
 
-export function PersonFavoriteButton({ personId, personName, verbose = false }: PersonProps) {
+export function PersonFavoriteButton({ personId, personName }: PersonProps) {
   const notebook = useNotebook();
-  const favorite = notebook.favoritePeople.some((item) => item.id === personId);
-  const disabled = !notebook.ready || notebook.loadError;
+  const showToast = useUndoToast();
+  const favorite = notebook.favoritePeople.find((item) => item.id === personId) ?? null;
+
+  const fail = (error: unknown) => {
+    showToast(storageMessage(error));
+  };
+
+  if (!notebook.ready) {
+    return null;
+  }
+  if (notebook.loadError) {
+    return <Text style={styles.warning}>記録を読み込めませんでした</Text>;
+  }
 
   return (
     <View style={styles.block}>
-      {verbose ? (
-        <View style={styles.block}>
-          <Text style={styles.section}>この端末の記録</Text>
-          <Text style={styles.caption}>
-            お気に入りは、この端末だけに保存します。サーバーへは送りません。
-          </Text>
-          {!notebook.ready ? <Text style={styles.caption}>記録を読み込んでいます。</Text> : null}
-          {notebook.loadError ? (
-            <Text style={styles.warning}>この端末の記録を読み込めませんでした。</Text>
-          ) : null}
-        </View>
-      ) : null}
       <Text style={styles.body}>
-        {favorite ? 'お気に入りに入っています。' : 'お気に入りには入っていません。'}
+        {favorite != null ? 'お気に入りに入っています。' : 'お気に入りには入っていません。'}
       </Text>
       <RecordButton
-        label={favorite ? 'お気に入りから外す' : 'お気に入りに入れる'}
+        label={favorite != null ? 'お気に入りから外す' : 'お気に入りに入れる'}
         accessibilityLabel={
-          favorite ? `${personName}のお気に入りを外す` : `${personName}をお気に入りに入れる`
+          favorite != null
+            ? `${personName}のお気に入りを外す`
+            : `${personName}をお気に入りに入れる`
         }
-        disabled={disabled}
         onPress={() => {
-          if (favorite) {
-            confirmRemove(
-              'お気に入りから外しますか',
-              `「${personName}」を、この端末のお気に入りから外します。`,
-              () => {
-                void notebook.removeFavoritePerson(personId).catch(reportStorageError);
-              },
-            );
+          if (favorite != null) {
+            const saved: FavoriteRecord = favorite;
+            haptics.remove();
+            void notebook.removeFavoritePerson(personId).then(() => {
+              showToast('お気に入りから外しました', () =>
+                notebook.restoreFavoritePerson(saved).catch(fail),
+              );
+            }, fail);
             return;
           }
-          void notebook.addFavoritePerson(personId).catch(reportStorageError);
+          haptics.select();
+          void notebook.addFavoritePerson(personId).then(() => {
+            showToast('お気に入りに入れました', () =>
+              notebook.removeFavoritePerson(personId).catch(fail),
+            );
+          }, fail);
         }}
       />
     </View>
@@ -178,26 +173,18 @@ export function PersonFavoriteButton({ personId, personName, verbose = false }: 
 function RecordButton({
   label,
   accessibilityLabel,
-  disabled,
   onPress,
 }: {
   label: string;
   accessibilityLabel: string;
-  disabled: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        disabled ? styles.disabled : null,
-        pressed && !disabled ? styles.pressed : null,
-      ]}
+      style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
     >
       <Text style={styles.buttonLabel}>{label}</Text>
     </Pressable>
@@ -208,18 +195,8 @@ const styles = StyleSheet.create({
   block: {
     gap: theme.space.sm,
   },
-  section: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '700',
-  },
-  caption: {
-    color: theme.color.inkMuted,
-    fontSize: theme.font.caption,
-    lineHeight: theme.font.caption + theme.space.xs,
-  },
   warning: {
-    color: theme.color.clay,
+    color: theme.color.brick,
     fontSize: theme.font.caption,
     lineHeight: theme.font.caption + theme.space.xs,
   },
@@ -233,14 +210,14 @@ const styles = StyleSheet.create({
     height: theme.space.xl,
     borderRadius: theme.radius.md,
     borderWidth: theme.border.hairline,
-    borderColor: theme.color.line,
-    backgroundColor: theme.color.card,
+    borderColor: theme.color.separator,
+    backgroundColor: theme.color.paper,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sealOn: {
-    borderColor: theme.color.moss,
-    backgroundColor: theme.color.mossWash,
+    borderColor: theme.color.leafDark,
+    backgroundColor: theme.color.leafWash,
   },
   sealLabel: {
     color: theme.color.inkMuted,
@@ -248,7 +225,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sealLabelOn: {
-    color: theme.color.moss,
+    color: theme.color.leafDark,
   },
   body: {
     flex: 1,
@@ -257,22 +234,20 @@ const styles = StyleSheet.create({
     lineHeight: theme.font.body + theme.space.sm,
   },
   button: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.md,
+    borderRadius: theme.radius.md,
+    borderCurve: 'continuous',
+    backgroundColor: theme.color.press,
   },
   buttonLabel: {
-    color: theme.color.moss,
+    color: theme.color.leafDark,
     fontSize: theme.font.body,
     fontWeight: '600',
   },
   pressed: {
     opacity: 0.7,
-  },
-  disabled: {
-    opacity: 0.45,
   },
 });

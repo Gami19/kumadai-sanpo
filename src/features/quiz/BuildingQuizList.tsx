@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EstimatedChip } from '@/components/EstimatedChip';
 import { ScreenLink } from '@/components/ScreenLink';
 import { designationLabel } from '@/features/map/spots';
 import { useBuildings } from '@/lib/content/useBuildings';
@@ -12,13 +13,7 @@ import { useQuizResults } from '@/lib/quiz/results';
 import { formatQuizPlayedAt, type QuizResult } from '@/lib/quiz/score';
 import { theme } from '@/theme/tokens';
 
-const ESTIMATED_POSITION_NOTE =
-  '位置は推定です。現地で確認できるまで、確定した場所としては扱いません。';
-
-function scoreLabel(result: QuizResult | undefined, ready: boolean): string {
-  if (!ready) {
-    return '成績を読み込んでいます';
-  }
+function scoreLabel(result: QuizResult | undefined): string {
   if (result == null) {
     return 'まだ挑戦していません';
   }
@@ -49,18 +44,12 @@ export function BuildingQuizList() {
 
   return (
     <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={[
         styles.content,
-        {
-          paddingTop: insets.top + theme.space.lg,
-          paddingBottom: insets.bottom + theme.space.xl,
-        },
+        { paddingBottom: insets.bottom + theme.space.xl },
       ]}
     >
-      <Text style={styles.title}>建物のクイズ</Text>
-      <Text style={styles.lead}>
-        気になる建物を選んで、四択を三問解きます。三問中二問以上でクリアです。現地にいなくても解けて、成績はこの端末だけに残ります。
-      </Text>
       {groups.map((group) => (
         <View key={group.campus} style={styles.section}>
           <Text style={styles.sectionTitle}>{group.campus}</Text>
@@ -88,15 +77,14 @@ function BuildingRow({
   ready: boolean;
 }) {
   const startLabel = result == null ? 'クイズを始める' : 'もう一度挑戦する';
+  const score = ready ? scoreLabel(result) : null;
   return (
-    <View style={styles.card}>
+    <View style={styles.row}>
       <Text style={styles.name}>{building.name}</Text>
       <Text style={styles.reading}>{building.reading}</Text>
       <Text style={styles.meta}>{designationLabel(building.designation)}</Text>
-      {building.positionEstimated ? (
-        <Text style={styles.estimate}>{ESTIMATED_POSITION_NOTE}</Text>
-      ) : null}
-      <Text style={styles.score}>{scoreLabel(result, ready)}</Text>
+      {building.positionEstimated ? <EstimatedChip /> : null}
+      {score != null ? <Text style={styles.score}>{score}</Text> : null}
       <Link href={{ pathname: '/quiz/[id]', params: { id: building.id } }} asChild>
         <Pressable
           accessibilityRole="button"
@@ -117,38 +105,27 @@ function BuildingRow({
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.sm,
     gap: theme.space.lg,
   },
-  title: {
-    color: theme.color.ink,
-    fontSize: theme.font.title,
-    fontWeight: '700',
-  },
-  lead: {
-    color: theme.color.inkMuted,
-    fontSize: theme.font.body,
-    lineHeight: theme.font.body + theme.space.sm,
-  },
   section: {
-    gap: theme.space.md,
+    gap: theme.space.sm,
   },
   sectionTitle: {
-    color: theme.color.moss,
+    color: theme.color.leafDark,
     fontSize: theme.font.body,
     fontWeight: '700',
   },
-  card: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
+  row: {
     gap: theme.space.sm,
-    padding: theme.space.md,
+    paddingVertical: theme.space.sm,
+    borderBottomWidth: theme.border.hairline,
+    borderBottomColor: theme.color.separator,
   },
   name: {
     color: theme.color.ink,
+    fontFamily: theme.font.heading,
     fontSize: theme.font.body,
-    fontWeight: '700',
   },
   reading: {
     color: theme.color.inkMuted,
@@ -158,18 +135,16 @@ const styles = StyleSheet.create({
     color: theme.color.ink,
     fontSize: theme.font.caption,
   },
-  estimate: {
-    color: theme.color.clay,
-    fontSize: theme.font.caption,
-    lineHeight: theme.font.caption + theme.space.xs,
-  },
   score: {
     color: theme.color.inkMuted,
     fontSize: theme.font.caption,
   },
   start: {
-    backgroundColor: theme.color.moss,
+    backgroundColor: theme.color.leafDark,
     borderRadius: theme.radius.md,
+    borderCurve: 'continuous',
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.md,
   },
@@ -177,7 +152,7 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   startLabel: {
-    color: theme.color.card,
+    color: theme.color.white,
     fontSize: theme.font.body,
     fontWeight: '700',
     textAlign: 'center',

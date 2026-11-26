@@ -22,6 +22,7 @@
 
 ## 作業の進め方
 - 画面・ナビゲーション作業の前に `.cursor/skills/` の該当skillを読む（project-spec は常に最初）
+- UI の作業では `design-picturebook` と `docs/ui-redesign.md` を正にする。あわせて `expo-design-system`（`references/native-slop.md` の grep を含む）、`expo-native-ui`、`expo-animation`、文章の判断には `frontend-design` に従う
 - データ（content/、data/geo/）を変更したら `scripts/` の検証を回す
 - 個人データ（お気に入り・訪問スタンプ）は端末内保存のみ。Cloudflareへ送らない
 - コンテンツ（建物・人物・イラスト）は Cloudflare から配信し、アプリ更新なしで差し替え可能にする

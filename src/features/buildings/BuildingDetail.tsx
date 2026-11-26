@@ -1,8 +1,9 @@
-import { router } from 'expo-router';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EstimatedChip } from '@/components/EstimatedChip';
 import { ScreenLink } from '@/components/ScreenLink';
+import { SourceButton } from '@/components/SourceButton';
 import { designationLabel, spots } from '@/features/map/spots';
 import { BuildingRecordButtons } from '@/features/notebook/RecordControls';
 import { RelatedPeople } from '@/features/people/RelatedPeople';
@@ -28,14 +29,6 @@ function visitText(building: Building): string {
   return building.visit === '未確認' ? '見学情報は未確認です。' : building.visit;
 }
 
-function goBack() {
-  if (router.canGoBack()) {
-    router.back();
-  } else {
-    router.replace('/map');
-  }
-}
-
 export function BuildingDetail({ id }: Props) {
   const insets = useSafeAreaInsets();
   const buildings = useBuildings();
@@ -45,22 +38,12 @@ export function BuildingDetail({ id }: Props) {
 
   return (
     <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={[
         styles.content,
-        {
-          paddingTop: insets.top + theme.space.lg,
-          paddingBottom: insets.bottom + theme.space.xl,
-        },
+        { paddingBottom: insets.bottom + theme.space.xl },
       ]}
     >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="前の画面に戻る"
-        onPress={goBack}
-        style={styles.back}
-      >
-        <Text style={styles.backLabel}>戻る</Text>
-      </Pressable>
       {building == null ? (
         <UnknownBuilding />
       ) : (
@@ -73,11 +56,8 @@ export function BuildingDetail({ id }: Props) {
 function UnknownBuilding() {
   return (
     <View style={styles.block}>
-      <Text style={styles.title}>建物が見つかりません</Text>
-      <Text style={styles.body}>
-        この番号の建物は、いまの内容にありません。マップのピンから、座標のある地点を選んでください。
-      </Text>
-      <ScreenLink href="/map" label="マップへ" />
+      <Text style={styles.body}>この建物は見当たりません。</Text>
+      <ScreenLink href="/map" label="地図" />
     </View>
   );
 }
@@ -91,21 +71,12 @@ function BuildingBody({
 }) {
   return (
     <View style={styles.block}>
-      <Text style={styles.title}>{building.name}</Text>
       <Text style={styles.reading}>{building.reading}</Text>
       <View style={styles.badges}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeLabel}>{designationLabel(building.designation)}</Text>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeLabel}>{building.campus}</Text>
-        </View>
+        <Text style={styles.badge}>{designationLabel(building.designation)}</Text>
+        <Text style={styles.badge}>{building.campus}</Text>
       </View>
-      {building.positionEstimated ? (
-        <Text style={styles.estimate}>
-          位置は推定です。現地で確認できるまで、確定した場所としては扱いません。
-        </Text>
-      ) : null}
+      {building.positionEstimated ? <EstimatedChip /> : null}
       {building.heritageName.length > 0 ? (
         <View style={styles.block}>
           <Text style={styles.section}>文化財の名称</Text>
@@ -119,27 +90,12 @@ function BuildingBody({
         <Text style={styles.body}>{visitText(building)}</Text>
       </View>
       <RelatedPeople personIds={building.relatedPersonIds} />
-      <BuildingRecordButtons buildingId={building.id} buildingName={building.name} verbose />
-      <View style={styles.block}>
-        <Text style={styles.section}>出典</Text>
-        {building.sources.map((source) => (
-          <Pressable
-            key={source.url}
-            accessibilityRole="link"
-            accessibilityLabel={`${source.title}を開く`}
-            onPress={() => {
-              void Linking.openURL(source.url);
-            }}
-            style={styles.source}
-          >
-            <Text style={styles.sourceLabel}>{source.title}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <BuildingRecordButtons buildingId={building.id} buildingName={building.name} />
+      <SourceButton sources={building.sources} />
       {target ? (
         <ScreenLink
           href={{ pathname: '/map', params: { campus: target.campus, spot: target.spotId } }}
-          label="マップで見る"
+          label="地図で見る"
         />
       ) : null}
     </View>
@@ -149,24 +105,11 @@ function BuildingBody({
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.lg,
     gap: theme.space.md,
-  },
-  back: {
-    alignSelf: 'flex-start',
-    paddingVertical: theme.space.sm,
-  },
-  backLabel: {
-    color: theme.color.moss,
-    fontSize: theme.font.body,
-    fontWeight: '700',
   },
   block: {
     gap: theme.space.sm,
-  },
-  title: {
-    color: theme.color.ink,
-    fontSize: theme.font.title,
-    fontWeight: '700',
   },
   reading: {
     color: theme.color.inkMuted,
@@ -175,28 +118,15 @@ const styles = StyleSheet.create({
   badges: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.space.xs,
+    gap: theme.space.sm,
   },
   badge: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.sm,
-  },
-  badgeLabel: {
     color: theme.color.ink,
     fontSize: theme.font.caption,
     fontWeight: '700',
   },
-  estimate: {
-    color: theme.color.clay,
-    fontSize: theme.font.caption,
-    lineHeight: theme.font.caption + theme.space.xs,
-  },
   section: {
-    color: theme.color.moss,
+    color: theme.color.leafDark,
     fontSize: theme.font.caption,
     fontWeight: '700',
   },
@@ -204,18 +134,5 @@ const styles = StyleSheet.create({
     color: theme.color.ink,
     fontSize: theme.font.body,
     lineHeight: theme.font.body + theme.space.sm,
-  },
-  source: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.md,
-  },
-  sourceLabel: {
-    color: theme.color.moss,
-    fontSize: theme.font.caption,
-    fontWeight: '600',
   },
 });

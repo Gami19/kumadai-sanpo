@@ -112,6 +112,21 @@ export function stampBuilding(buildingId: string): Promise<void> {
   });
 }
 
+export function restoreStamp(record: { buildingId: string; stampedAt: string }): Promise<void> {
+  return commit((current) => {
+    if (
+      !isNotebookId(record.buildingId) ||
+      current.stamps.some((stamp) => stamp.buildingId === record.buildingId)
+    ) {
+      return current;
+    }
+    return {
+      ...current,
+      stamps: [...current.stamps, { buildingId: record.buildingId, stampedAt: record.stampedAt }],
+    };
+  });
+}
+
 export function removeStamp(buildingId: string): Promise<void> {
   return commit((current) => {
     if (!current.stamps.some((stamp) => stamp.buildingId === buildingId)) {
@@ -152,6 +167,10 @@ export function addFavoriteBuilding(id: string): Promise<void> {
   return addFavorite('favoriteBuildings', id);
 }
 
+export function restoreFavoriteBuilding(record: { id: string; savedAt: string }): Promise<void> {
+  return restoreFavorite('favoriteBuildings', record);
+}
+
 export function removeFavoriteBuilding(id: string): Promise<void> {
   return removeFavorite('favoriteBuildings', id);
 }
@@ -160,6 +179,25 @@ export function addFavoritePerson(id: string): Promise<void> {
   return addFavorite('favoritePeople', id);
 }
 
+export function restoreFavoritePerson(record: { id: string; savedAt: string }): Promise<void> {
+  return restoreFavorite('favoritePeople', record);
+}
+
 export function removeFavoritePerson(id: string): Promise<void> {
   return removeFavorite('favoritePeople', id);
+}
+
+function restoreFavorite(
+  kind: 'favoriteBuildings' | 'favoritePeople',
+  record: { id: string; savedAt: string },
+): Promise<void> {
+  return commit((current) => {
+    if (!isNotebookId(record.id) || current[kind].some((item) => item.id === record.id)) {
+      return current;
+    }
+    return {
+      ...current,
+      [kind]: [...current[kind], { id: record.id, savedAt: record.savedAt }],
+    };
+  });
 }
