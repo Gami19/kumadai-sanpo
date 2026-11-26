@@ -6,7 +6,11 @@ const POSITION_STATUSES = ['確定', '推定', '未取得'] as const;
 
 export type PositionStatus = (typeof POSITION_STATUSES)[number];
 
+const SPOT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export type Spot = {
+  /** content/buildings.json の id と揃える。座標の無い行にも付ける。 */
+  id: string;
   name: string;
   osmName: string;
   /** 座標が無い行は null。文書館のように未確定の地点はここに残し、ピンにはしない。 */
@@ -21,6 +25,7 @@ export type Spot = {
 };
 
 const REQUIRED_COLUMNS = [
+  'id',
   'spot',
   'osm_name',
   'lat',
@@ -124,6 +129,7 @@ export function parseSpotsCsv(text: string): Spot[] {
     columnIndex(header, name);
   }
 
+  const idIndex = columnIndex(header, 'id');
   const spotIndex = columnIndex(header, 'spot');
   const osmIndex = columnIndex(header, 'osm_name');
   const latIndex = columnIndex(header, 'lat');
@@ -134,6 +140,7 @@ export function parseSpotsCsv(text: string): Spot[] {
   const sourceIndex = columnIndex(header, 'source');
   const spots: Spot[] = [];
   const seen = new Set<string>();
+  const seenIds = new Set<string>();
 
   for (const cells of table.slice(1)) {
     if (cells.length !== header.length) {
@@ -147,6 +154,15 @@ export function parseSpotsCsv(text: string): Spot[] {
       throw new Error(`スポット名が重複しています: ${name}`);
     }
     seen.add(name);
+
+    const id = cells[idIndex]?.trim() ?? '';
+    if (!SPOT_ID_PATTERN.test(id)) {
+      throw new Error(`${name} の id が不正です: ${id}`);
+    }
+    if (seenIds.has(id)) {
+      throw new Error(`スポット id が重複しています: ${id}`);
+    }
+    seenIds.add(id);
 
     const latText = cells[latIndex]?.trim() ?? '';
     const lonText = cells[lonIndex]?.trim() ?? '';
@@ -176,6 +192,7 @@ export function parseSpotsCsv(text: string): Spot[] {
     }
 
     spots.push({
+      id,
       name,
       osmName: cells[osmIndex]?.trim() ?? '',
       lat,

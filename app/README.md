@@ -5,7 +5,8 @@ Expo Router のルート（app/）と実装コード（src/）の置き場所。
 画面（タブ）：
 - `app/(tabs)/index.tsx` ホーム
 - `app/(tabs)/map.tsx` 絵本マップ
-- `app/(tabs)/building.tsx` 建物詳細（クイズ）
+- `app/(tabs)/building.tsx` 建物詳細（クイズ）の仮画面。仕様の5画面はこのタブが担当で、建物一覧にはしていない
+- `app/building/[id].tsx` ピンから開く建物の本文
 - `app/(tabs)/people.tsx` 人物
 - `app/(tabs)/notebook.tsx` さんぽ帳
 

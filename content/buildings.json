@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "buildings": [
+    {
+      "id": "goko-kinenkan",
+      "spotId": "goko-kinenkan",
+      "name": "五高記念館",
+      "reading": "ごこうきねんかん",
+      "heritageName": "旧第五高等中学校 本館",
+      "campus": "黒髪北",
+      "designation": "重要文化財",
+      "yearBuilt": "1889",
+      "yearNote": "",
+      "summary": "旧第五高等中学校の本館です。1889年（明治22年）に竣工した煉瓦造・2階建で、文部省技師の山口半六と久留正道が設計しました。1969年8月19日に、化学実験場・表門とともに国の重要文化財に指定されています。黒髪北キャンパスにあり、第五高等学校の資料を展示する五高記念館として公開されています。",
+      "visit": "熊本大学五高記念館規則では、開館は午前10時から午後4時（入館は午後3時30分まで）です。休館は毎週火曜日、12月28日から1月4日、学長が指定する日です。入館料は無料です。館長の判断で開館時間や休館が変わることがあります。",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "旧第五高等中学校 本館（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/187706"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "重要文化財旧第五高等中学校ほか3棟災害復旧工事報告書（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/shisetu/xjahx3"
+        },
+        {
+          "title": "熊本大学五高記念館規則",
+          "url": "https://external.jimu.kumamoto-u.ac.jp/~kisoku/act/print/print110001249.html"
+        },
+        {
+          "title": "交通アクセス＆キャンパスマップ（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou"
+        }
+      ]
+    },
+    {
+      "id": "kagaku-jikkenjo",
+      "spotId": "kagaku-jikkenjo",
+      "name": "化学実験場",
+      "reading": "かがくじっけんじょう",
+      "heritageName": "旧第五高等中学校 化学実験場",
+      "campus": "黒髪北",
+      "designation": "重要文化財",
+      "yearBuilt": "1889",
+      "yearNote": "",
+      "summary": "旧第五高等中学校の化学実験場です。1889年（明治22年）に竣工した煉瓦造・平屋で、本館と同じく山口半六と久留正道が設計しました。大学の歴史散策によると、階段教室や実験室が並び、ランプの上昇気流を使う排気装置（ドラフトチャンバー）が残っています。1969年8月19日に重要文化財に指定され、2014年には日本化学会の化学遺産に認定されています。",
+      "visit": "未確認",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "旧第五高等中学校 化学実験場（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/124567"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "記者懇談会資料「五高記念館等の復旧状況」（熊本大学、2022年1月）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/kouhou/kisyakon_file/kisyakon220112.pdf"
+        },
+        {
+          "title": "重要文化財旧第五高等中学校ほか3棟災害復旧工事報告書（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/shisetu/xjahx3"
+        }
+      ]
+    },
+    {
+      "id": "honbu",
+      "spotId": "honbu",
+      "name": "熊本大学本部（事務局）",
+      "reading": "くまもとだいがくほんぶ",
+      "heritageName": "熊本大学本部（旧熊本高等工業学校本館）",
+      "campus": "黒髪南",
+      "designation": "登録有形文化財",
+      "yearBuilt": "1924",
+      "yearNote": "",
+      "summary": "旧熊本高等工業学校の本館です。創立時の木造校舎が1922年（大正11年）に焼失したあと、1924年（大正13年）に鉄筋コンクリート造・3階建として再建されました。設計は文部省技師の長岡勇衛です。1998年9月2日に登録有形文化財になりました。黒髪南キャンパスにあり、いまは大学の本部（事務局）として使われています。",
+      "visit": "未確認",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "熊本大学本部（旧熊本高等工業学校本館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/113827"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "黒髪南地区（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou/map_kurokami_2"
+        },
+        {
+          "title": "交通アクセス＆キャンパスマップ（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou"
+        }
+      ]
+    },
+    {
+      "id": "kougaku-shiryokan",
+      "spotId": "kougaku-shiryokan",
+      "name": "工学部研究資料館",
+      "reading": "こうがくぶけんきゅうしりょうかん",
+      "heritageName": "熊本大学工学部(旧熊本高等工業学校)旧機械実験工場",
+      "campus": "黒髪南",
+      "designation": "重要文化財",
+      "yearBuilt": "1908",
+      "yearNote": "",
+      "summary": "旧熊本高等工業学校の機械実験工場です。1908年（明治41年）に竣工した煉瓦造で、黒髪南キャンパスにあります。大学の歴史散策では、設計を文部省の技手としています。1970年に新しい工場ができるまで実習に使われ、1977年に工学部研究資料館として開館しました。1994年12月27日に、館内の工作機械11台とともに重要文化財に指定されています。2007年には日本機械学会の機械遺産に認定されました。",
+      "visit": "未確認",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "熊本大学工学部(旧熊本高等工業学校)旧機械実験工場（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/202489"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "黒髪南地区（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou/map_kurokami_2"
+        },
+        {
+          "title": "重要文化財旧第五高等中学校ほか3棟災害復旧工事報告書（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/shisetu/xjahx3"
+        },
+        {
+          "title": "記者懇談会資料「五高記念館等の復旧状況」（熊本大学、2022年1月）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/kouhou/kisyakon_file/kisyakon220112.pdf"
+        }
+      ]
+    },
+    {
+      "id": "akamon",
+      "spotId": "akamon",
+      "name": "表門（赤門）",
+      "reading": "おもてもん（あかもん）",
+      "heritageName": "旧第五高等中学校 表門",
+      "campus": "黒髪北",
+      "designation": "重要文化財",
+      "yearBuilt": "1889",
+      "yearNote": "",
+      "summary": "旧第五高等中学校の表門で、通称は赤門です。煉瓦と自然石を組み合わせた親柱と袖壁からなり、文化遺産オンラインの建築年代は1889年（明治22年）です。1969年8月19日に重要文化財に指定されました。大学の歴史散策によると、五高の本館と同じ時期に建てられ、当初から門扉はなく、旧豊後街道（現在の県道337号）に面しています。同じページでは、夏目漱石の句「いかめしき門を入れば蕎麦の花」が紹介されています。",
+      "visit": "未確認",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "旧第五高等中学校 表門（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/147258"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "重要文化財旧第五高等中学校ほか3棟災害復旧工事報告書（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/shisetu/xjahx3"
+        }
+      ]
+    },
+    {
+      "id": "yamazaki-kinenkan",
+      "spotId": "yamazaki-kinenkan",
+      "name": "山崎記念館",
+      "reading": "やまざききねんかん",
+      "heritageName": "熊本大学医学部山崎記念館（旧熊本医科大学図書館）",
+      "campus": "本荘",
+      "designation": "登録有形文化財",
+      "yearBuilt": "1931",
+      "yearNote": "",
+      "summary": "旧熊本医科大学の図書館です。医科大学長兼教授だった山崎正董を記念して、1931年（昭和6年）に武田五一の設計で建てられた鉄筋コンクリート造・2階建です。1998年9月2日に登録有形文化財になりました。本荘北地区にあります。大学の歴史散策によると、2006年に中央診療棟の建設に伴い、曳家で約48メートル移されました。地図のピンの位置は推定であり、確定した場所としては扱いません。",
+      "visit": "未確認",
+      "positionEstimated": true,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "熊本大学医学部山崎記念館（旧熊本医科大学図書館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/136518"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "本荘北地区（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou/honjyo-kita"
+        }
+      ]
+    },
+    {
+      "id": "ooe-campus",
+      "spotId": "ooe-campus",
+      "name": "大江キャンパス（薬学部）",
+      "reading": "おおえきゃんぱす",
+      "heritageName": "",
+      "campus": "大江",
+      "designation": "なし",
+      "yearBuilt": "未確認",
+      "yearNote": "",
+      "summary": "熊本大学大江キャンパス（薬学部）の代表点です。文化財に指定された一棟ではなく、大学の案内では熊本市中央区大江本町5番1号にあり、市電・バスの「味噌天神」から徒歩5分とされています。一つの建物の竣工年は、この地点には結びつけていません。",
+      "visit": "未確認",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "交通アクセス＆キャンパスマップ（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou"
+        },
+        {
+          "title": "アクセス（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/access/"
+        }
+      ]
+    },
+    {
+      "id": "yakuyo-shokubutsuen",
+      "spotId": "yakuyo-shokubutsuen",
+      "name": "薬用植物園（エコフロンティアセンター）",
+      "reading": "やくようしょくぶつえん",
+      "heritageName": "",
+      "campus": "大江",
+      "designation": "なし",
+      "yearBuilt": "未確認",
+      "yearNote": "1927年（昭和2年）に、前身の官立熊本薬学専門学校の薬草園として開設された。建物の竣工年ではない。",
+      "summary": "薬学部附属の薬用資源エコフロンティアセンター（薬用植物園）です。薬学部のページによると、肥後細川藩の薬園「蕃滋園」（1756年開園）の流れを汲み、前身の官立熊本薬学専門学校の薬草園として1927年（昭和2年）に開設されました。大江キャンパスの中にあり、約7,000平方メートルで、学生と一般に公開しています。文化財指定はありません。",
+      "visit": "学生と一般に公開している、と薬学部のページにあります。開園時間は未確認です。",
+      "positionEstimated": false,
+      "relatedPersonIds": [],
+      "sources": [
+        {
+          "title": "薬草パーク構想（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/aboutus/yakusopark.php"
+        },
+        {
+          "title": "アクセス（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/access/"
+        }
+      ]
+    }
+  ]
+}

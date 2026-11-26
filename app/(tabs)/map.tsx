@@ -1,30 +1,54 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CampusSwitcher } from '@/features/map/CampusSwitcher';
 import { CategoryFilter } from '@/features/map/CategoryFilter';
-import { campuses, type CampusId } from '@/features/map/campuses';
+import { campuses, isCampusId, type CampusId } from '@/features/map/campuses';
 import { illustrationSize } from '@/features/map/georef';
 import { SpotCallout } from '@/features/map/SpotCallout';
 import { designationLabel, mapSpots } from '@/features/map/spots';
 import { ZoomableCampusMap } from '@/features/map/ZoomableCampusMap';
 import { theme } from '@/theme/tokens';
 
+function routeParam(value: string | string[] | undefined): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const trimmed = raw?.trim() ?? '';
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
-  const [campusId, setCampusId] = useState<CampusId>(campuses[0].id);
+  const params = useLocalSearchParams<{ campus?: string | string[]; spot?: string | string[] }>();
+  const campusParam = routeParam(params.campus);
+  const spotParam = routeParam(params.spot);
+  const [campusId, setCampusId] = useState<CampusId>(
+    campusParam != null && isCampusId(campusParam) ? campusParam : campuses[0].id,
+  );
   const [designationId, setDesignationId] = useState<string | null>(null);
-  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(spotParam);
+  const linkKey = `${campusParam ?? ''}:${spotParam ?? ''}`;
+  const [appliedLink, setAppliedLink] = useState(linkKey);
+  if (appliedLink !== linkKey) {
+    setAppliedLink(linkKey);
+    if (campusParam != null && isCampusId(campusParam)) {
+      setCampusId(campusParam);
+    }
+    if (spotParam != null) {
+      setDesignationId(null);
+      setSelectedId(spotParam);
+    }
+  }
   const campus = campuses.find((item) => item.id === campusId) ?? campuses[0];
   const image = illustrationSize(campus.id);
   const placed = useMemo(
     () => mapSpots(campus.id, designationId),
     [campus.id, designationId],
   );
-  const selected = placed.find((spot) => spot.name === selectedName) ?? null;
+  const selected = placed.find((spot) => spot.id === selectedId) ?? null;
   const pins = placed.map((spot) => ({
-    id: spot.name,
+    id: spot.id,
     name: spot.name,
     x: spot.x,
     y: spot.y,
@@ -33,12 +57,12 @@ export default function MapScreen() {
 
   const selectCampus = (id: CampusId) => {
     setCampusId(id);
-    setSelectedName(null);
+    setSelectedId(null);
   };
 
   const selectDesignation = (id: string | null) => {
     setDesignationId(id);
-    setSelectedName(null);
+    setSelectedId(null);
   };
 
   return (
@@ -64,18 +88,19 @@ export default function MapScreen() {
           imageWidth={image.width}
           imageHeight={image.height}
           pins={pins}
-          selectedPinId={selected?.name ?? null}
-          onSelectPin={(id) => setSelectedName((current) => (current === id ? null : id))}
+          selectedPinId={selected?.id ?? null}
+          onSelectPin={(id) => setSelectedId((current) => (current === id ? null : id))}
         />
         <View pointerEvents="none" style={styles.creditWrap}>
           <Text style={styles.credit}>地図データの出典：© OpenStreetMap contributors（ODbL）</Text>
         </View>
         {selected ? (
           <SpotCallout
+            id={selected.id}
             name={selected.name}
             designationLabel={designationLabel(selected.designation)}
             estimated={selected.positionStatus === '推定'}
-            onClose={() => setSelectedName(null)}
+            onClose={() => setSelectedId(null)}
           />
         ) : null}
       </View>

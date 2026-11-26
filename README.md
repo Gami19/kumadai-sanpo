@@ -46,7 +46,7 @@
 - 建物・人物の情報：大学公式資料等の調査に基づきます（`docs/仕様-決め打ち.md` 参照）
 
 ## 状態
-- Expo SDK 58 のアプリ骨格（5画面の仮ルート）あり。建物・人物の中身と絵本マップの実装はこれから
+- Expo SDK 58 のアプリ骨格（5画面の仮ルート）あり。絵本マップと、座標のある地点の建物本文がある。人物はこれから
 - 仕様決め打ち済み。マップは4区画（黒髪北・黒髪南・本荘・大江）の下敷きとイラスト試作が確定済み
 - 下敷き・イラストの画像素材は追加済み
   - 下敷き（いずれも確定版）：黒髪北 kurokami-north-underlay.png、黒髪南 kurokami-south-underlay.png、本荘 v7 honjo-campus-underlay-v7.png、大江 v8 ooe-campus-underlay-v8.png（`data/geo/`）
