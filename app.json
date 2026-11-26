@@ -27,6 +27,12 @@
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidForegroundServiceEnabled": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F6F3E7"
+        }
       ]
     ],
     "experiments": {
