@@ -1,0 +1,35 @@
+{
+  "controlTolerancePx": 2,
+  "underlayTolerancePx": 0.5,
+  "spotTolerancePx": 0.2,
+  "directTolerancePx": 0.01,
+  "controls": [
+    { "campus": "kurokami-north", "underlayX": 878, "underlayY": 150, "illusX": 836.5, "illusY": 139.5, "lat": 32.818331, "lon": 130.727101 },
+    { "campus": "kurokami-north", "underlayX": 1606, "underlayY": 1158, "illusX": 1530.5, "illusY": 1101.5, "lat": 32.81476, "lon": 130.730153 },
+    { "campus": "kurokami-north", "underlayX": 332, "underlayY": 1158, "illusX": 315.5, "illusY": 1101.5, "lat": 32.81476, "lon": 130.724812 },
+    { "campus": "kurokami-north", "underlayX": 1606, "underlayY": 294, "illusX": 1529.5, "illusY": 276.5, "lat": 32.817821, "lon": 130.730153 },
+    { "campus": "kurokami-south", "underlayX": 1766, "underlayY": 1459, "illusX": 1448.5, "illusY": 1195.5, "lat": 32.810375, "lon": 130.729921 },
+    { "campus": "kurokami-south", "underlayX": 150, "underlayY": 337, "illusX": 123.5, "illusY": 275.5, "lat": 32.813433, "lon": 130.724722 },
+    { "campus": "kurokami-south", "underlayX": 352, "underlayY": 1646, "illusX": 288.5, "illusY": 1347.5, "lat": 32.809865, "lon": 130.725372 },
+    { "campus": "kurokami-south", "underlayX": 1362, "underlayY": 150, "illusX": 1115.5, "illusY": 122.5, "lat": 32.813943, "lon": 130.728622 },
+    { "campus": "honjo", "underlayX": 352, "underlayY": 1272, "illusX": 288, "illusY": 1038, "lat": 32.794518, "lon": 130.710454 },
+    { "campus": "honjo", "underlayX": 1766, "underlayY": 337, "illusX": 1449, "illusY": 273, "lat": 32.797264, "lon": 130.715361 },
+    { "campus": "honjo", "underlayX": 1564, "underlayY": 1646, "illusX": 1284, "illusY": 1343, "lat": 32.79342, "lon": 130.71466 },
+    { "campus": "honjo", "underlayX": 150, "underlayY": 150, "illusX": 122, "illusY": 121, "lat": 32.797813, "lon": 130.709753 },
+    { "campus": "ooe", "underlayX": 756, "underlayY": 150, "illusX": 556.5, "illusY": 113.5, "lat": 32.796544, "lon": 130.720903 },
+    { "campus": "ooe", "underlayX": 1362, "underlayY": 1934, "illusX": 1011.5, "illusY": 1452.5, "lat": 32.793051, "lon": 130.722305 },
+    { "campus": "ooe", "underlayX": 1564, "underlayY": 596, "illusX": 1162.5, "illusY": 446.5, "lat": 32.795671, "lon": 130.722772 },
+    { "campus": "ooe", "underlayX": 554, "underlayY": 1042, "illusX": 406.5, "illusY": 782.5, "lat": 32.794798, "lon": 130.720436 }
+  ],
+  "spots": [
+    { "name": "五高記念館", "designation": "重要文化財", "positionStatus": "確定", "campuses": ["kurokami-north"], "pixels": { "kurokami-north": [802.8, 664.6] } },
+    { "name": "化学実験場", "designation": "重要文化財", "positionStatus": "確定", "campuses": ["kurokami-north"], "pixels": { "kurokami-north": [997.5, 667] } },
+    { "name": "熊本大学本部（事務局）", "designation": "登録有形文化財", "positionStatus": "確定", "campuses": ["kurokami-north", "kurokami-south"], "pixels": { "kurokami-south": [912.1, 148.1] } },
+    { "name": "工学部研究資料館", "designation": "重要文化財", "positionStatus": "確定", "campuses": ["kurokami-south"], "pixels": { "kurokami-south": [727.1, 251.4] } },
+    { "name": "表門（赤門）", "designation": "重要文化財", "positionStatus": "確定", "latText": "32.814398", "lonText": "130.726565", "campuses": ["kurokami-north"], "pixels": { "kurokami-north": [714.3, 1198.4] } },
+    { "name": "山崎記念館", "designation": "登録有形文化財", "positionStatus": "推定", "latText": "32.7953", "lonText": "130.7108", "sourceIncludes": "推定", "campuses": ["honjo"], "pixels": { "honjo": [370.5, 820.3] } },
+    { "name": "文書館（煉瓦本館）", "designation": "", "positionStatus": "未取得", "latText": "", "lonText": "", "campuses": [] },
+    { "name": "大江キャンパス（薬学部）", "designation": "なし", "positionStatus": "確定", "campuses": ["ooe"], "pixels": { "ooe": [552.2, 812.7] } },
+    { "name": "薬用植物園（エコフロンティアセンター）", "designation": "なし", "positionStatus": "確定", "campuses": ["ooe"], "pixels": { "ooe": [1083.4, 640.7] } }
+  ]
+}

@@ -8,6 +8,7 @@ description: 建物・人物・コースのコンテンツデータのスキー�
 ## データの置き場所
 - 人が編集する正データ：content/buildings.json、content/people.json、content/courses.json
 - 地理データ：data/geo/spots.csv（緯度経度はこちらが正。content側に座標を重複して持たない）
+- 地図の絞り込みは spots.csv の `designation` 列。値は「重要文化財／登録有形文化財／なし」（`data/geo/categories.json`）。`content/buildings.json` を作ったあとも、この区分とずらさない
 
 ## スキーマの原則
 - 各建物：id、名称、キャンパス（黒髪北／黒髪南／本荘／大江）、竣工年、文化財指定（重要文化財／登録有形文化財／なし）、説明、見学情報、ゆかりの人物id、スポットid（spots.csvと対応）
