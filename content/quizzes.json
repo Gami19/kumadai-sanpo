@@ -1,0 +1,609 @@
+{
+  "schemaVersion": 1,
+  "questions": [
+    {
+      "id": "goko-kinenkan-q1",
+      "buildingId": "goko-kinenkan",
+      "role": "primary",
+      "prompt": "旧第五高等中学校の本館（いまの五高記念館）が竣工した年はどれですか。",
+      "choices": [
+        "1887年（明治20年）",
+        "1889年（明治22年）",
+        "1894年（明治27年）",
+        "1969年（昭和44年）"
+      ],
+      "answerIndex": 1,
+      "explanation": "第五高等中学校の本館は1889年（明治22年）8月に竣工しました。1887年は熊本への設置が決まった年、1894年は第五高等学校へ改称した年、1969年は重要文化財に指定された年です。",
+      "sources": [
+        {
+          "title": "五高の歴史 年表（熊本大学五高記念館）",
+          "url": "https://www.goko.kumamoto-u.ac.jp/history/history1.php"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "五高記念館概要（熊本大学五高記念館）",
+          "url": "https://www.goko.kumamoto-u.ac.jp/img/about/books/kanpo2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "goko-kinenkan-q2",
+      "buildingId": "goko-kinenkan",
+      "role": "primary",
+      "prompt": "旧第五高等中学校の本館を設計したのは、だれですか。",
+      "choices": [
+        "文部技師の山口半六と久留正道",
+        "文部技師の長岡勇衛",
+        "武田五一",
+        "ジョサイア・コンドル"
+      ],
+      "answerIndex": 0,
+      "explanation": "設計は当時の文部技師、山口半六と久留正道です。長岡勇衛はのちの熊本大学本部、武田五一は山崎記念館の設計者です。コンドルは久留正道の師として記念館が紹介していますが、この本館の設計者ではありません。",
+      "sources": [
+        {
+          "title": "旧第五高等中学校 本館（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/187706"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "五高の歴史 建築（熊本大学五高記念館）",
+          "url": "https://www.goko.kumamoto-u.ac.jp/history/history2.php"
+        }
+      ]
+    },
+    {
+      "id": "goko-kinenkan-q3",
+      "buildingId": "goko-kinenkan",
+      "role": "primary",
+      "prompt": "本館が、化学実験場・表門とともに国の重要文化財に指定されたのはいつですか。",
+      "choices": [
+        "1889年8月",
+        "1969年8月19日",
+        "1994年12月27日",
+        "1998年9月2日"
+      ],
+      "answerIndex": 1,
+      "explanation": "1969年8月19日に、本館・化学実験場・表門が重要文化財に指定されました。1994年12月27日は工学部研究資料館、1998年9月2日は本部と山崎記念館の登録有形文化財の日です。",
+      "sources": [
+        {
+          "title": "旧第五高等中学校 本館（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/187706"
+        },
+        {
+          "title": "重要文化財旧第五高等中学校ほか3棟災害復旧工事報告書（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/shisetu/xjahx3"
+        }
+      ]
+    },
+    {
+      "id": "kagaku-jikkenjo-q1",
+      "buildingId": "kagaku-jikkenjo",
+      "role": "primary",
+      "prompt": "化学実験場の竣工は本館と同じ1889年ですが、月はいつですか。",
+      "choices": [
+        "2月",
+        "8月",
+        "12月",
+        "翌年の4月"
+      ],
+      "answerIndex": 2,
+      "explanation": "五高記念館の公式な沿革では、1889年8月に本館が、12月に化学実験場が竣工したとされています。2月は本館の着工月、8月は本館の竣工月です。",
+      "sources": [
+        {
+          "title": "五高記念館概要（熊本大学五高記念館）",
+          "url": "https://www.goko.kumamoto-u.ac.jp/img/about/books/kanpo2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "kagaku-jikkenjo-q2",
+      "buildingId": "kagaku-jikkenjo",
+      "role": "primary",
+      "prompt": "大学の歴史散策が、化学実験場に残ると紹介している、建設当時からの排気設備はどれですか。",
+      "choices": [
+        "走行式クレーン",
+        "ランプの上昇気流を使うドラフトチャンバー",
+        "セセッション風の柱頭飾り",
+        "鉄製の門扉"
+      ],
+      "answerIndex": 1,
+      "explanation": "実験室には、ランプの上昇気流を利用した排気装置（ドラフトチャンバー）が残っています。走行式クレーンは工学部研究資料館、セセッション風の柱頭飾りは本部、門扉は表門には当初からありません。",
+      "sources": [
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "認定化学遺産第025号（日本化学会）",
+          "url": "https://www.chemistry.or.jp/know/doc/isan025_article.pdf"
+        }
+      ]
+    },
+    {
+      "id": "kagaku-jikkenjo-q3",
+      "buildingId": "kagaku-jikkenjo",
+      "role": "primary",
+      "prompt": "2014年、日本化学会はこの化学実験場を何に認定しましたか。",
+      "choices": [
+        "国宝",
+        "登録有形文化財",
+        "機械遺産",
+        "化学遺産"
+      ],
+      "answerIndex": 3,
+      "explanation": "2014年に日本化学会の化学遺産（第025号）に認定されました。重要文化財への指定は1969年です。機械遺産は工学部研究資料館、登録有形文化財は本部や山崎記念館の区分です。",
+      "sources": [
+        {
+          "title": "化学遺産の認定（熊本大学、2014年）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/kouhou/kouhoushi/kumadainow/topics/2014/t260408"
+        },
+        {
+          "title": "認定化学遺産第025号（日本化学会）",
+          "url": "https://www.chemistry.or.jp/know/doc/isan025_article.pdf"
+        }
+      ]
+    },
+    {
+      "id": "honbu-q1",
+      "buildingId": "honbu",
+      "role": "primary",
+      "prompt": "いまの熊本大学本部（事務局）は、もともと何の建物でしたか。",
+      "choices": [
+        "第五高等学校の本館",
+        "熊本高等工業学校の本館",
+        "熊本医科大学の図書館",
+        "熊本高等工業学校の機械実験工場"
+      ],
+      "answerIndex": 1,
+      "explanation": "旧熊本高等工業学校の本館です。第五高等学校の本館は五高記念館、医科大学の図書館は山崎記念館、機械実験工場は工学部研究資料館です。",
+      "sources": [
+        {
+          "title": "熊本大学本部（旧熊本高等工業学校本館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/113827"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "honbu-q2",
+      "buildingId": "honbu",
+      "role": "primary",
+      "prompt": "いまの鉄筋コンクリート造の本部について、正しい説明はどれですか。",
+      "choices": [
+        "1889年に、最初から鉄筋コンクリート造で建てられた",
+        "1922年に木造校舎が焼け、1924年に再建された",
+        "1931年に図書館として建てられた",
+        "2006年に曳家で約48メートル移された"
+      ],
+      "answerIndex": 1,
+      "explanation": "創立時は木造で、1922年の焼失後、1924年に鉄筋コンクリート造で再建されました。1889年は五高の本館、1931年と2006年の曳家は山崎記念館です。",
+      "sources": [
+        {
+          "title": "熊本大学本部（旧熊本高等工業学校本館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/113827"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "honbu-q3",
+      "buildingId": "honbu",
+      "role": "primary",
+      "prompt": "この建物の設計者はだれですか。",
+      "choices": [
+        "山口半六と久留正道",
+        "武田五一",
+        "文部技師の長岡勇衛",
+        "ジョサイア・コンドル"
+      ],
+      "answerIndex": 2,
+      "explanation": "文化遺産オンラインによると、設計担当は文部技師の長岡勇衛です。山口半六と久留正道は五高の本館など、武田五一は山崎記念館の設計者です。",
+      "sources": [
+        {
+          "title": "熊本大学本部（旧熊本高等工業学校本館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/113827"
+        }
+      ]
+    },
+    {
+      "id": "kougaku-shiryokan-q1",
+      "buildingId": "kougaku-shiryokan",
+      "role": "primary",
+      "prompt": "工学部研究資料館の建物は、建てられたとき何に使われていましたか。",
+      "choices": [
+        "第五高等学校の化学実験場",
+        "熊本高等工業学校の本館",
+        "熊本高等工業学校の機械実験工場",
+        "熊本医科大学の図書館"
+      ],
+      "answerIndex": 2,
+      "explanation": "旧熊本高等工業学校の機械実験工場として1908年に竣工しました。化学実験場は黒髪北、高等工業学校の本館はいまの本部、医科大学の図書館は山崎記念館です。",
+      "sources": [
+        {
+          "title": "熊本大学工学部(旧熊本高等工業学校)旧機械実験工場（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/202489"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "kougaku-shiryokan-q2",
+      "buildingId": "kougaku-shiryokan",
+      "role": "primary",
+      "prompt": "この建物が竣工した年はどれですか。",
+      "choices": [
+        "1889年（明治22年）",
+        "1908年（明治41年）",
+        "1924年（大正13年）",
+        "1977年（昭和52年）"
+      ],
+      "answerIndex": 1,
+      "explanation": "1908年（明治41年）の竣工です。1889年は五高の煉瓦建築、1924年は本部の再建、1977年は研究資料館として開館した年です。",
+      "sources": [
+        {
+          "title": "熊本大学工学部(旧熊本高等工業学校)旧機械実験工場（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/202489"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "kougaku-shiryokan-q3",
+      "buildingId": "kougaku-shiryokan",
+      "role": "primary",
+      "prompt": "館内の工作機械11台について、大学の歴史散策の説明として正しいものはどれですか。",
+      "choices": [
+        "図面だけが残っていて、実物は別の場所にある",
+        "動態保存（動く状態で保存）されている",
+        "複製を展示し、実物は非公開である",
+        "1969年に、五高の建物と一緒に重要文化財になった"
+      ],
+      "answerIndex": 1,
+      "explanation": "明治から大正期に購入された11台の工作機械が、建物とともに重要文化財に指定され、動態保存されています。指定は1994年12月27日で、1969年の五高3棟とは別です。",
+      "sources": [
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "熊本大学工学部(旧熊本高等工業学校)旧機械実験工場（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/202489"
+        }
+      ]
+    },
+    {
+      "id": "akamon-q1",
+      "buildingId": "akamon",
+      "role": "primary",
+      "prompt": "旧第五高等中学校の表門は、通称で何と呼ばれていますか。",
+      "choices": [
+        "赤門",
+        "中門",
+        "黒門",
+        "龍南門"
+      ],
+      "answerIndex": 0,
+      "explanation": "大学の歴史散策でも、通称は『赤門』と紹介されています。中門は赤門から本館正面へ進んだ先にある、別の門です。",
+      "sources": [
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "旧第五高等中学校 表門（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/147258"
+        }
+      ]
+    },
+    {
+      "id": "akamon-q2",
+      "buildingId": "akamon",
+      "role": "primary",
+      "prompt": "大学の歴史散策によると、この表門に当初から無かったものはどれですか。",
+      "choices": [
+        "煉瓦の親柱",
+        "袖壁",
+        "門扉",
+        "自然石を組み合わせた意匠"
+      ],
+      "answerIndex": 2,
+      "explanation": "煉瓦と自然石を組み合わせた親柱と袖壁からなりますが、当初から門扉は作られませんでした。中門には建設当時、鉄製の門扉がありました（戦時中に金属供出）。",
+      "sources": [
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "akamon-q3",
+      "buildingId": "akamon",
+      "role": "primary",
+      "prompt": "大学の歴史散策が、この表門に関連して紹介している夏目漱石の句はどれですか。",
+      "choices": [
+        "秋はふみ 吾に天下の志",
+        "いかめしき門を入れば蕎麦の花",
+        "剛毅木訥",
+        "順道制勝行不害人"
+      ],
+      "answerIndex": 1,
+      "explanation": "『いかめしき門を入れば蕎麦の花』が、門内に畑もあったようだという説明とともに紹介されています。『秋はふみ 吾に天下の志』は漱石の別の句で、五高記念館付近の句碑に刻まれています。剛毅木訥は五高の校風、順道制勝行不害人は嘉納治五郎の書です。",
+      "sources": [
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "yamazaki-kinenkan-q1",
+      "buildingId": "yamazaki-kinenkan",
+      "role": "primary",
+      "prompt": "山崎記念館は、建てられたとき何の建物でしたか。",
+      "choices": [
+        "第五高等学校の本館",
+        "熊本高等工業学校の本館",
+        "熊本医科大学の図書館",
+        "薬学部の薬草園管理棟"
+      ],
+      "answerIndex": 2,
+      "explanation": "旧熊本医科大学の図書館として、1931年に建てられました。文化財の正式名称にもそのことが入っています。",
+      "sources": [
+        {
+          "title": "熊本大学医学部山崎記念館（旧熊本医科大学図書館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/136518"
+        },
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "yamazaki-kinenkan-q2",
+      "buildingId": "yamazaki-kinenkan",
+      "role": "primary",
+      "prompt": "この建物の設計者はだれですか。",
+      "choices": [
+        "山口半六",
+        "長岡勇衛",
+        "武田五一",
+        "久留正道"
+      ],
+      "answerIndex": 2,
+      "explanation": "文化遺産オンラインによると、武田五一の設計です。山口半六と久留正道は五高の建築、長岡勇衛は本部の設計者です。",
+      "sources": [
+        {
+          "title": "熊本大学医学部山崎記念館（旧熊本医科大学図書館）（文化遺産オンライン）",
+          "url": "https://online.bunka.go.jp/heritages/detail/136518"
+        }
+      ]
+    },
+    {
+      "id": "yamazaki-kinenkan-q3",
+      "buildingId": "yamazaki-kinenkan",
+      "role": "primary",
+      "prompt": "2006年、中央診療棟の建設に伴って、この建物に行われたことはどれですか。",
+      "choices": [
+        "解体して同じ場所に再建された",
+        "黒髪北キャンパスへ移築された",
+        "曳家という方法で、約48メートル移された",
+        "この年に重要文化財に指定された"
+      ],
+      "answerIndex": 2,
+      "explanation": "大学の歴史散策によると、末永く保存するため、2006年に曳家で約48メートル移動しました。文化財の区分は1998年の登録有形文化財で、重要文化財ではありません。地図上の位置は推定です。",
+      "sources": [
+        {
+          "title": "大学の歴史散策（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        }
+      ]
+    },
+    {
+      "id": "ooe-campus-q1",
+      "buildingId": "ooe-campus",
+      "role": "primary",
+      "prompt": "大江キャンパスにあるのは、いまのどの学部ですか。",
+      "choices": [
+        "医学部",
+        "工学部",
+        "薬学部",
+        "文学部"
+      ],
+      "answerIndex": 2,
+      "explanation": "大学のキャンパス案内でも、大江地区は薬学部のキャンパスとされています。医学部は本荘、工学部は黒髪南です。",
+      "sources": [
+        {
+          "title": "交通アクセス＆キャンパスマップ（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou"
+        },
+        {
+          "title": "アクセス（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/access/"
+        }
+      ]
+    },
+    {
+      "id": "ooe-campus-q2",
+      "buildingId": "ooe-campus",
+      "role": "primary",
+      "prompt": "大学と薬学部の公式案内で、大江キャンパスへの最寄り（市電・バス）と徒歩時間はどれですか。",
+      "choices": [
+        "『熊本大学前』下車、徒歩5分",
+        "『味噌天神』下車、徒歩5分",
+        "『大学病院前』下車、徒歩5分",
+        "『水道町』下車、徒歩5分"
+      ],
+      "answerIndex": 1,
+      "explanation": "市電・バスとも『味噌天神』下車、徒歩5分と案内されています。『熊本大学前』は黒髪、『大学病院前』は本荘の目安です。",
+      "sources": [
+        {
+          "title": "交通アクセス＆キャンパスマップ（熊本大学）",
+          "url": "https://www.kumamoto-u.ac.jp/campusjouhou"
+        },
+        {
+          "title": "アクセス（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/access/"
+        }
+      ]
+    },
+    {
+      "id": "ooe-campus-q3",
+      "buildingId": "ooe-campus",
+      "role": "primary",
+      "prompt": "薬学部の公式な沿革によると、前身校がいまの大江の地へ移ったのはいつですか。",
+      "choices": [
+        "1885年（明治18年）",
+        "1909年（明治42年）",
+        "1925年（大正14年）",
+        "1927年（昭和2年）"
+      ],
+      "answerIndex": 1,
+      "explanation": "1885年に私立熊本薬学校として創立され、1909年3月に飽託郡大江村九品寺（現在地）へ移転しました。1925年は官立への移管、1927年は薬草園の開設です。この地点に一つの建物の竣工年は結びつけません。",
+      "sources": [
+        {
+          "title": "沿革（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/aboutus/history.php"
+        }
+      ]
+    },
+    {
+      "id": "yakuyo-shokubutsuen-q1",
+      "buildingId": "yakuyo-shokubutsuen",
+      "role": "primary",
+      "prompt": "この薬用植物園が、官立熊本薬学専門学校の薬草園として開設された年はどれですか。",
+      "choices": [
+        "1756年",
+        "1885年",
+        "1909年",
+        "1927年"
+      ],
+      "answerIndex": 3,
+      "explanation": "薬学部の沿革と植物園の公式案内では、1927年（昭和2年）の開設とされています。1756年は蕃滋園の開園、1885年は私立熊本薬学校の創立、1909年は大江の現在地への移転です。これは園の開設年であり、建物の竣工年ではありません。",
+      "sources": [
+        {
+          "title": "沿革（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/aboutus/history.php"
+        },
+        {
+          "title": "薬草パーク構想（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/aboutus/yakusopark.php"
+        },
+        {
+          "title": "薬用植物園案内（グローバル天然物科学研究センター）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/gcnrs/facility/medicinal_plant_garden/"
+        }
+      ]
+    },
+    {
+      "id": "yakuyo-shokubutsuen-q2",
+      "buildingId": "yakuyo-shokubutsuen",
+      "role": "primary",
+      "prompt": "薬学部が、この園の流れを汲むとする、肥後細川藩の薬園の名前はどれですか。",
+      "choices": [
+        "再春館",
+        "蕃滋園",
+        "習学寮",
+        "仰光館"
+      ],
+      "answerIndex": 1,
+      "explanation": "肥後細川藩の薬園『蕃滋園』（1756年開園）の流れを汲む、と薬学部が説明しています。再春館は医育寮、習学寮は五高の寮です。",
+      "sources": [
+        {
+          "title": "薬草パーク構想（熊本大学薬学部）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/aboutus/yakusopark.php"
+        },
+        {
+          "title": "薬用植物園案内（グローバル天然物科学研究センター）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/gcnrs/facility/medicinal_plant_garden/"
+        }
+      ]
+    },
+    {
+      "id": "yakuyo-shokubutsuen-q3",
+      "buildingId": "yakuyo-shokubutsuen",
+      "role": "primary",
+      "prompt": "グローバル天然物科学研究センターの公式案内で、この薬用植物園の見学の仕方はどれですか。",
+      "choices": [
+        "毎月第3木曜日の午後だけ公開される",
+        "いつでも自由に見学できる",
+        "内部は非公開で、外観だけが見られる",
+        "見学には必ず事前予約が必要である"
+      ],
+      "answerIndex": 1,
+      "explanation": "公式案内に『当園はいつでも自由に見学できますので、気軽に足をお運びください』とあります。開始・終了時刻の固定案内は見当たらないため、時刻までは書いていません。毎月第3木曜日は工学部研究資料館の公開日です。",
+      "sources": [
+        {
+          "title": "薬用植物園案内（グローバル天然物科学研究センター）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/gcnrs/facility/medicinal_plant_garden/"
+        }
+      ]
+    },
+    {
+      "id": "kougaku-shiryokan-q4",
+      "buildingId": "kougaku-shiryokan",
+      "role": "reserve",
+      "prompt": "工学部研究資料館の、通常の一般公開の日時はどれですか。",
+      "choices": [
+        "毎日10時から16時（火曜休館）",
+        "毎月第3木曜日の13時から16時",
+        "週末のみ、事前予約が必要",
+        "学内者に限って、平日の午前中"
+      ],
+      "answerIndex": 1,
+      "explanation": "大学と日本機械学会の案内では、通常は毎月第3木曜日の13時から16時で、入館料は無料です。地震などのあと一時中止することがあるので、出かける前に工学部の案内を確認してください。",
+      "sources": [
+        {
+          "title": "工学部研究資料館の一般公開再開（熊本大学、2022年4月）",
+          "url": "https://www.kumamoto-u.ac.jp/whatsnew/sizen/20220418"
+        },
+        {
+          "title": "機械遺産 No.002（日本機械学会）",
+          "url": "https://www.jsme.or.jp/kikaiisan/heritage_002_jp.html"
+        },
+        {
+          "title": "工学部研究資料館の公開について（熊本大学工学部、2026年9月）",
+          "url": "https://www.eng.kumamoto-u.ac.jp/20260902/"
+        }
+      ]
+    },
+    {
+      "id": "yakuyo-shokubutsuen-q4",
+      "buildingId": "yakuyo-shokubutsuen",
+      "role": "reserve",
+      "prompt": "薬用植物園の公式案内で、蕃滋園に由来し園内に現存すると挙げられる植物はどれですか。",
+      "choices": [
+        "ソテツ",
+        "モクゲンジ",
+        "クスノキ",
+        "イチョウ"
+      ],
+      "answerIndex": 1,
+      "explanation": "公式案内が挙げるのは、モクゲンジ、テンダイウヤク、サンシュユ、サンザシ、ニンジンボクです。種の総数は公式ページごとに数字が違うため、数は問題にしていません。",
+      "sources": [
+        {
+          "title": "薬用植物園案内（グローバル天然物科学研究センター）",
+          "url": "https://www.pharm.kumamoto-u.ac.jp/gcnrs/facility/medicinal_plant_garden/"
+        }
+      ]
+    }
+  ]
+}
