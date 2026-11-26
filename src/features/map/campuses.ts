@@ -33,3 +33,18 @@ export const campuses: readonly CampusMap[] = [
     illustration: require('../../../assets/illustrations/ooe-illustrated.webp'),
   },
 ];
+
+const campusIdByLabel: Record<string, CampusId> = {
+  黒髪北: 'kurokami-north',
+  黒髪南: 'kurokami-south',
+  本荘: 'honjo',
+  大江: 'ooe',
+};
+
+export function isCampusId(value: string): value is CampusId {
+  return campuses.some((campus) => campus.id === value);
+}
+
+export function campusIdForLabel(label: string): CampusId | null {
+  return campusIdByLabel[label] ?? null;
+}

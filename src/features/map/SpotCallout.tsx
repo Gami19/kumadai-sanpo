@@ -1,18 +1,17 @@
+import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/theme/tokens';
 
 type Props = {
+  id: string;
   name: string;
   designationLabel: string;
   estimated: boolean;
   onClose: () => void;
 };
 
-// TODO: content/buildings.json と建物 id ができたら、建物詳細 building/[id] へつなぐ。
-// いまは id も本文も無いので、タップでは名前のシートだけ出す。仮の詳細画面は置かない。
-
-export function SpotCallout({ name, designationLabel, estimated, onClose }: Props) {
+export function SpotCallout({ id, name, designationLabel, estimated, onClose }: Props) {
   return (
     <View style={styles.sheet} accessibilityRole="summary">
       <View style={styles.copy}>
@@ -23,6 +22,18 @@ export function SpotCallout({ name, designationLabel, estimated, onClose }: Prop
             位置は推定です。現地で確認できるまで、確定した場所としては扱いません。
           </Text>
         ) : null}
+        <Link
+          href={{ pathname: '/building/[id]', params: { id } }}
+          asChild
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${name}の建物ページを開く`}
+            style={styles.open}
+          >
+            <Text style={styles.openLabel}>この建物を見る</Text>
+          </Pressable>
+        </Link>
       </View>
       <Pressable
         accessibilityRole="button"
@@ -68,6 +79,15 @@ const styles = StyleSheet.create({
     color: theme.color.clay,
     fontSize: theme.font.caption,
     lineHeight: theme.font.caption + theme.space.xs,
+  },
+  open: {
+    alignSelf: 'flex-start',
+    paddingVertical: theme.space.xs,
+  },
+  openLabel: {
+    color: theme.color.moss,
+    fontSize: theme.font.caption,
+    fontWeight: '700',
   },
   close: {
     paddingVertical: theme.space.sm,
