@@ -13,7 +13,10 @@ export type IconName =
   | 'arrow.uturn.backward'
   | 'star'
   | 'star.fill'
-  | 'lock';
+  | 'lock'
+  | 'location'
+  | 'location.fill'
+  | 'location.slash';
 
 const symbols = {
   'chevron.right': { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
@@ -27,6 +30,9 @@ const symbols = {
   star: { ios: 'star', android: 'star_border', web: 'star_border' },
   'star.fill': { ios: 'star.fill', android: 'star', web: 'star' },
   lock: { ios: 'lock', android: 'lock', web: 'lock' },
+  location: { ios: 'location', android: 'location_on', web: 'location_on' },
+  'location.fill': { ios: 'location.fill', android: 'my_location', web: 'my_location' },
+  'location.slash': { ios: 'location.slash', android: 'location_off', web: 'location_off' },
 } as const satisfies Record<IconName, { ios: SFSymbol; android: AndroidSymbol; web: AndroidSymbol }>;
 
 type Props = {

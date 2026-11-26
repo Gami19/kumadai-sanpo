@@ -11,27 +11,23 @@ type Props = {
 
 export function CampusSwitcher({ selectedId, onSelect }: Props) {
   return (
-    <View style={styles.row}>
+    <View accessibilityRole="tablist" style={styles.bar} testID="campus-switcher">
       {campuses.map((campus) => {
         const selected = campus.id === selectedId;
         return (
           <Pressable
             key={campus.id}
-            accessibilityRole="button"
+            accessibilityRole="tab"
             accessibilityState={{ selected }}
             accessibilityLabel={`${campus.label}キャンパス`}
             onPress={() => onSelect(campus.id)}
             style={({ pressed }) => [
-              styles.tab,
-              selected ? styles.tabSelected : styles.tabIdle,
-              pressed ? styles.tabPressed : null,
+              styles.item,
+              selected ? styles.itemOn : null,
+              pressed ? styles.itemPressed : null,
             ]}
           >
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              style={[styles.label, selected ? styles.labelSelected : styles.labelIdle]}
-            >
+            <Text numberOfLines={1} style={[styles.label, selected ? styles.labelOn : styles.labelOff]}>
               {campus.label}
             </Text>
           </Pressable>
@@ -42,41 +38,39 @@ export function CampusSwitcher({ selectedId, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: theme.space.xs,
-    paddingHorizontal: theme.space.md,
-    paddingBottom: theme.space.sm,
-  },
-  tab: {
+  bar: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.xs,
+    padding: theme.space.xs,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.color.paper,
+    boxShadow: theme.shadow.float,
+  },
+  item: {
+    flex: 1,
+    minHeight: theme.hit,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.radius.md,
-    borderWidth: theme.border.hairline,
-    paddingVertical: theme.space.sm,
     paddingHorizontal: theme.space.xs,
-    minHeight: theme.space.xl,
+    borderRadius: theme.radius.pill,
   },
-  tabSelected: {
-    backgroundColor: theme.color.moss,
-    borderColor: theme.color.moss,
+  itemOn: {
+    backgroundColor: theme.color.brick,
   },
-  tabIdle: {
-    backgroundColor: theme.color.card,
-    borderColor: theme.color.line,
-  },
-  tabPressed: {
+  itemPressed: {
     opacity: 0.7,
   },
   label: {
     fontSize: theme.font.caption,
-    fontWeight: '600',
+    fontWeight: '700',
+    lineHeight: theme.font.caption + theme.space.xs,
   },
-  labelSelected: {
-    color: theme.color.card,
+  labelOn: {
+    color: theme.color.white,
   },
-  labelIdle: {
+  labelOff: {
     color: theme.color.ink,
   },
 });
