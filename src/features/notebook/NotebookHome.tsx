@@ -487,7 +487,12 @@ function StampFrame({
         style={({ pressed }) => [pressed && styles.tilePressed]}
       >
         <View style={styles.frame}>
-          <MapThumb id={building.id} sepia={!stamped} style={styles.thumb} />
+          <MapThumb
+            id={building.id}
+            sepia={!stamped}
+            style={[styles.thumb, stamped && styles.thumbStamped]}
+          />
+          {stamped ? <View pointerEvents="none" style={styles.thumbWash} /> : null}
           {stamped ? null : (
             <View pointerEvents="none" style={styles.cue}>
               <Icon name="mappin" size={16} color={theme.color.ink} />
@@ -592,6 +597,15 @@ const styles = StyleSheet.create({
   },
   thumb: {
     aspectRatio: 1,
+  },
+  /** 押印済みはイラストを後ろに引き、印を主役にする。 */
+  thumbStamped: {
+    opacity: 0.42,
+  },
+  thumbWash: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: theme.color.paper,
+    opacity: 0.38,
   },
   tilePressed: {
     opacity: theme.opacity.pressed,

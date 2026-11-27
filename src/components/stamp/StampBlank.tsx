@@ -24,7 +24,7 @@ export function StampBlank({ frame, size, tone, icon = null, caption = null }: P
   const showCaption = caption != null && caption.length > 0 && size >= 72;
   const iconSize = Math.max(14, Math.round(size * 0.16));
   return (
-    <StampLanding>
+    <StampLanding size={size} pad={false}>
       <View style={{ width: size, height: size }} accessible={false}>
         <Svg width={size} height={size} viewBox={`0 0 ${STAMP_BOX} ${STAMP_BOX}`}>
           <Path

@@ -34,7 +34,7 @@
 | `app/` | Expo Router のルート（画面） |
 | `src/` | components / features / lib / theme |
 | `assets/illustrations/` | 区画イラスト・建物イラスト |
-| `assets/stamps/` | 建物印の原画 SVG（`<建物id>-stamp-vermilion.svg`。レジストリ登録で差し替え） |
+| `assets/stamps/` | 建物印の原画 SVG（`<建物id>-stamp.svg`。レジストリ登録で差し替え） |
 | `content/` | 建物・人物・コースの正データ（JSON） |
 | `data/geo/` | スポット座標（spots.csv）、区画ポリゴン、下敷き |
 | `worker/` | Cloudflare Worker（コンテンツ配信） |
