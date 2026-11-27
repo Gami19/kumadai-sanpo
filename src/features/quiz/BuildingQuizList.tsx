@@ -94,69 +94,71 @@ function QuizTile({
       : '未挑戦';
   const reviewLabel = missCount > 0 ? `復習 ${missCount}問。` : '';
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${building.name}のクイズ。${building.designation}。${building.positionEstimated ? '位置は推定。' : ''}${score}。${reviewLabel}`}
-      onPress={() => {
-        haptics.select();
-        router.push({ pathname: '/quiz/[id]', params: { id: building.id } });
-      }}
-      style={({ pressed }) => [styles.tile, { width }, pressed && styles.pressed]}
-    >
-      <View style={styles.art}>
-        <MapThumb id={building.id} style={styles.thumb} label="" />
-        {building.positionEstimated ? (
-          <View style={styles.chip}>
-            <EstimatedChip interactive={false} />
-          </View>
-        ) : null}
-        {missCount > 0 ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${building.name}の復習 ${missCount}問`}
-            hitSlop={theme.space.xs}
-            onPress={() => {
-              haptics.select();
-              router.push({
-                pathname: '/quiz/[id]',
-                params: { id: building.id, mode: 'review', q: missIds.join(',') },
-              });
-            }}
-            style={({ pressed }) => [styles.reviewBadge, pressed && styles.infoPressed]}
-          >
-            <Icon name="book" size={14} color={theme.color.white} />
-            <Text style={styles.reviewCount}>{missCount}</Text>
-          </Pressable>
-        ) : null}
+    <View style={[styles.tileWrap, { width }]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${building.name}のクイズ。${building.designation}。${building.positionEstimated ? '位置は推定。' : ''}${score}。${reviewLabel}`}
+        onPress={() => {
+          haptics.select();
+          router.push({ pathname: '/quiz/[id]', params: { id: building.id } });
+        }}
+        style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
+      >
+        <View style={styles.art}>
+          <MapThumb id={building.id} style={styles.thumb} label="" />
+          {building.positionEstimated ? (
+            <View style={styles.chip}>
+              <EstimatedChip interactive={false} />
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.caption}>
+          <View style={[styles.dot, { backgroundColor: designationColor(building.designation) }]} />
+          <Text style={styles.name} numberOfLines={2}>
+            {building.name}
+          </Text>
+        </View>
+        {showScore ? (
+          <ScoreMarks
+            correct={result?.bestCorrect ?? 0}
+            total={result?.total ?? 3}
+            size="sm"
+          />
+        ) : (
+          <View style={styles.starSlot} />
+        )}
+      </Pressable>
+      {missCount > 0 ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${building.name}の説明`}
+          accessibilityLabel={`${building.name}の復習 ${missCount}問`}
           hitSlop={theme.space.xs}
           onPress={() => {
             haptics.select();
-            router.push({ pathname: '/building/[id]', params: { id: building.id } });
+            router.push({
+              pathname: '/quiz/[id]',
+              params: { id: building.id, mode: 'review', q: missIds.join(',') },
+            });
           }}
-          style={({ pressed }) => [styles.info, pressed && styles.infoPressed]}
+          style={({ pressed }) => [styles.reviewBadge, pressed && styles.infoPressed]}
         >
-          <Icon name="info.circle" size={20} color={theme.color.ink} />
+          <Icon name="book" size={14} color={theme.color.white} />
+          <Text style={styles.reviewCount}>{missCount}</Text>
         </Pressable>
-      </View>
-      <View style={styles.caption}>
-        <View style={[styles.dot, { backgroundColor: designationColor(building.designation) }]} />
-        <Text style={styles.name} numberOfLines={2}>
-          {building.name}
-        </Text>
-      </View>
-      {showScore ? (
-        <ScoreMarks
-          correct={result?.bestCorrect ?? 0}
-          total={result?.total ?? 3}
-          size="sm"
-        />
-      ) : (
-        <View style={styles.starSlot} />
-      )}
-    </Pressable>
+      ) : null}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${building.name}の説明`}
+        hitSlop={theme.space.xs}
+        onPress={() => {
+          haptics.select();
+          router.push({ pathname: '/building/[id]', params: { id: building.id } });
+        }}
+        style={({ pressed }) => [styles.info, pressed && styles.infoPressed]}
+      >
+        <Icon name="info.circle" size={20} color={theme.color.ink} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -178,6 +180,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.space.sm,
+  },
+  tileWrap: {
+    position: 'relative',
   },
   tile: {
     gap: theme.space.xs,
@@ -205,6 +210,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: theme.space.xs,
     top: theme.space.xs,
+    zIndex: 1,
     minWidth: theme.hit - theme.space.sm,
     height: theme.hit - theme.space.sm,
     paddingHorizontal: theme.space.sm,
@@ -224,6 +230,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: theme.space.xs,
     right: theme.space.xs,
+    zIndex: 1,
     width: theme.hit,
     height: theme.hit,
     borderRadius: theme.radius.pill,
