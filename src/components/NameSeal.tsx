@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import Animated, {
+  ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -20,21 +21,24 @@ export function nameInitial(name: string): string {
   return Array.from(name.trim())[0] ?? '';
 }
 
+/** 印が少し大きく出て、紙に着地する。数値は印章で共通。 */
+const LANDING = { damping: 12, stiffness: 240, reduceMotion: ReduceMotion.System };
+
 export function NameSeal({ name, size = 44, pop = false }: Props) {
   const reduced = useReducedMotion();
-  const scale = useSharedValue(1);
+  const scale = useSharedValue(pop && !reduced ? 1.55 : 1);
 
   useEffect(() => {
     if (!pop || reduced) {
-      scale.value = 1;
+      scale.set(1);
       return;
     }
-    scale.value = 1.55;
-    scale.value = withSpring(1, { damping: 12, stiffness: 240 });
+    scale.set(1.55);
+    scale.set(withSpring(1, LANDING));
   }, [pop, reduced, scale]);
 
   const animated = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { rotate: '-10deg' }],
+    transform: [{ scale: scale.get() }, { rotate: '-10deg' }],
   }));
 
   return (

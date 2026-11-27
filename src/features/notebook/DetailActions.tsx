@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pressed: {
-    opacity: 0.7,
+    opacity: theme.opacity.pressed,
   },
   headerHit: {
     width: theme.hit,

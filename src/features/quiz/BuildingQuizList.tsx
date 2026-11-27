@@ -110,7 +110,7 @@ function QuizTile({
             haptics.select();
             router.push({ pathname: '/building/[id]', params: { id: building.id } });
           }}
-          style={styles.info}
+          style={({ pressed }) => [styles.info, pressed && styles.infoPressed]}
         >
           <Icon name="info.circle" size={20} color={theme.color.ink} />
         </Pressable>
@@ -191,40 +191,43 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: theme.space.xs,
     right: theme.space.xs,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: theme.hit,
+    height: theme.hit,
+    borderRadius: theme.radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.color.paper,
+  },
+  infoPressed: {
+    opacity: theme.opacity.pressed,
   },
   caption: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: theme.space.xs,
-    minHeight: 44,
+    minHeight: theme.hit,
     paddingHorizontal: theme.space.xs,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 6,
+    width: theme.space.sm,
+    height: theme.space.sm,
+    borderRadius: theme.radius.pill,
+    marginTop: theme.space.xs,
   },
   name: {
     flex: 1,
     color: theme.color.ink,
     fontFamily: theme.font.heading,
     fontSize: theme.font.body,
-    lineHeight: 22,
+    lineHeight: theme.font.body + theme.space.xs,
   },
   stars: {
     flexDirection: 'row',
     gap: theme.space.xs,
-    minHeight: 22,
+    minHeight: theme.font.body + theme.space.xs,
     paddingHorizontal: theme.space.xs,
   },
   starSlot: {
-    height: 22,
+    height: theme.font.body + theme.space.xs,
   },
 });

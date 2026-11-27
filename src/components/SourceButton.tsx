@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { haptics } from '@/lib/haptics';
 import type { SourceLink } from '@/lib/sheet/session';
 import { openSources } from '@/lib/sheet/session';
 import { theme } from '@/theme/tokens';
@@ -21,6 +22,7 @@ export function SourceButton({ sources }: Props) {
       accessibilityRole="button"
       accessibilityLabel={`${label}件を開く`}
       onPress={() => {
+        haptics.select();
         openSources(sources);
       }}
       style={({ pressed }) => [styles.hit, pressed && styles.pressed]}
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
-    minHeight: 44,
+    minHeight: theme.hit,
     paddingHorizontal: theme.space.sm,
     borderRadius: theme.radius.sm,
     borderCurve: 'continuous',

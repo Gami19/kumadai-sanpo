@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.brick,
   },
   itemPressed: {
-    opacity: 0.7,
+    opacity: theme.opacity.pressed,
   },
   label: {
     fontSize: theme.font.caption,

@@ -39,6 +39,8 @@ export const theme = {
     /** シートの背後。地図は残す。 */
     scrim: 'rgba(46, 42, 36, 0.28)',
     leafWash: 'rgba(70, 96, 30, 0.18)',
+    /** 煉瓦を薄く敷いた地。完成したさんぽ帳の表紙。文字には使わない。 */
+    brickWash: 'rgba(162, 84, 55, 0.16)',
 
     card: '#FFFFFF',
     moss: '#46601E',
@@ -68,6 +70,10 @@ export const theme = {
   },
   /** 最小タップ。見た目がこれより小さいときは hitSlop で足す。 */
   hit: 44,
+  opacity: {
+    /** 小さいボタンを押しているあいだ。行やタイルの地は color.press。 */
+    pressed: 0.7,
+  },
   shadow: {
     /** 地図の上に浮く操作。濃い影で階層を作らない。 */
     float: '0 2px 8px rgba(46, 42, 36, 0.12)',

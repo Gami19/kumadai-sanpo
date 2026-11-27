@@ -325,12 +325,12 @@ const styles = StyleSheet.create({
   },
   rule: {
     flex: 1,
-    height: 2,
+    height: theme.border.mark,
     backgroundColor: theme.color.path,
   },
   dot: {
-    width: 10,
-    height: 10,
+    width: theme.space.sm,
+    height: theme.space.sm,
     borderRadius: theme.radius.pill,
   },
   dotOn: {
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.paper,
   },
   mapPressed: {
-    opacity: 0.7,
+    opacity: theme.opacity.pressed,
   },
   buildingName: {
     minHeight: buildingLine * 2,

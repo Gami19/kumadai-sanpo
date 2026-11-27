@@ -68,7 +68,7 @@ function UndoBanner({ toast, onClose }: { toast: Toast; onClose: () => void }) {
               void undo();
             }
           }}
-          style={styles.undo}
+          style={({ pressed }) => [styles.undo, pressed && styles.undoPressed]}
         >
           <Icon name="arrow.uturn.backward" size={16} color={theme.color.leafDark} />
           <Text style={styles.undoLabel}>取り消す</Text>
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
-    minHeight: 44,
+    minHeight: theme.hit,
     paddingLeft: theme.space.md,
     paddingRight: theme.space.xs,
     borderRadius: theme.radius.md,
@@ -102,8 +102,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.xs,
-    minHeight: 44,
+    minHeight: theme.hit,
     paddingHorizontal: theme.space.sm,
+    borderRadius: theme.radius.sm,
+    borderCurve: 'continuous',
+  },
+  undoPressed: {
+    backgroundColor: theme.color.press,
   },
   undoLabel: {
     color: theme.color.leafDark,

@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.leafDark,
   },
   actionPressed: {
-    opacity: 0.85,
+    opacity: theme.opacity.pressed,
   },
   actionLabel: {
     color: theme.color.white,

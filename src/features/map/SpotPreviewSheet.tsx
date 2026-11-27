@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.brick,
   },
   detailPressed: {
-    opacity: 0.7,
+    opacity: theme.opacity.pressed,
   },
   detailLabel: {
     color: theme.color.white,

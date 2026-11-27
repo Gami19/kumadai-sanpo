@@ -4,6 +4,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 
 import { Icon } from '@/components/Icon';
 import { notices } from '@/copy/notices';
+import { haptics } from '@/lib/haptics';
 import { peekNotice, type NoticeRequest } from '@/lib/sheet/session';
 import { theme } from '@/theme/tokens';
 
@@ -51,6 +52,7 @@ export default function NoticeScreen() {
                 accessibilityRole="link"
                 accessibilityLabel={`${source.title}を開く`}
                 onPress={() => {
+                  haptics.select();
                   void Linking.openURL(source.url);
                 }}
                 style={({ pressed }) => [
@@ -85,7 +87,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
-    minHeight: 44,
+    minHeight: theme.hit,
     paddingVertical: theme.space.sm,
   },
   separator: {
