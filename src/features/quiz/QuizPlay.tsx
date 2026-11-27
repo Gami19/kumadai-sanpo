@@ -1,21 +1,17 @@
+import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
-import Animated, {
-  Easing,
-  FadeIn,
-  ReduceMotion,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/Icon';
+import { ScoreMarks } from '@/components/ScoreMarks';
+import { QuizExplanation } from '@/features/quiz/QuizExplanation';
 import { haptics } from '@/lib/haptics';
 import { useBuildings } from '@/lib/content/useBuildings';
 import { primaryQuestionsFor, type QuizQuestion } from '@/lib/content/quizzes';
 import { useQuizzes } from '@/lib/content/useQuizzes';
+import { clearQuizMiss, missIdsFor, recordQuizMiss, useQuizMisses } from '@/lib/quiz/misses';
 import { buildPlayQuestions, type PlayQuestion } from '@/lib/quiz/play';
 import { recordQuizResult } from '@/lib/quiz/results';
 import { openSources } from '@/lib/sheet/session';
@@ -23,6 +19,7 @@ import { theme } from '@/theme/tokens';
 
 type Phase = 'ask' | 'result';
 type Outcome = 'correct' | 'wrong';
+export type QuizMode = 'play' | 'review';
 
 type Session = {
   round: readonly PlayQuestion[];
@@ -36,16 +33,15 @@ type Session = {
 
 type Props = {
   buildingId: string;
+  mode?: QuizMode;
+  /** 復習開始時に渡す問題 id。プレイ中の増減で出題を変えない。 */
+  reviewQuestionIds?: readonly string[];
 };
 
 /** 正解から次へ進むまで。計画の 0.8〜1.2 秒。 */
 const CORRECT_ADVANCE_MS = 800;
 /** 判定アイコンの出現。押した実感は 150ms 以内。 */
 const MARK_MS = 120;
-/** 結果の星。まれな結果表示なので、短い一回だけ。 */
-const RESULT_MS = 180;
-
-const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
 function createSession(questions: readonly QuizQuestion[]): Session {
   return {
@@ -71,7 +67,7 @@ function moveNext(current: Session, auto: boolean): Session {
   return { ...current, cursor: current.cursor + 1, picked: null, paused: false };
 }
 
-export function QuizPlay({ buildingId }: Props) {
+export function QuizPlay({ buildingId, mode = 'play', reviewQuestionIds = [] }: Props) {
   const insets = useSafeAreaInsets();
   const buildings = useBuildings();
   const questions = useQuizzes();
@@ -80,9 +76,16 @@ export function QuizPlay({ buildingId }: Props) {
     () => primaryQuestionsFor(questions, buildingId),
     [questions, buildingId],
   );
-  const signature = primary
+  const pool = useMemo(() => {
+    if (mode !== 'review') {
+      return primary;
+    }
+    const wanted = new Set(reviewQuestionIds);
+    return primary.filter((question) => wanted.has(question.id));
+  }, [mode, primary, reviewQuestionIds]);
+  const signature = `${mode}:${pool
     .map((question) => `${question.id}:${question.answerIndex}:${question.choices.join('\u0001')}`)
-    .join('|');
+    .join('|')}`;
   const scrollRef = useRef<ScrollViewInstance>(null);
 
   return (
@@ -91,13 +94,14 @@ export function QuizPlay({ buildingId }: Props) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.space.xl }]}
     >
-      {building == null || primary.length === 0 ? (
-        <Missing />
+      {building == null || pool.length === 0 ? (
+        <Missing review={mode === 'review'} />
       ) : (
         <QuizRound
           key={signature}
           buildingId={building.id}
-          primary={primary}
+          mode={mode}
+          pool={pool}
           scrollRef={scrollRef}
         />
       )}
@@ -107,19 +111,28 @@ export function QuizPlay({ buildingId }: Props) {
 
 function QuizRound({
   buildingId,
-  primary,
+  mode,
+  pool,
   scrollRef,
 }: {
   buildingId: string;
-  primary: readonly QuizQuestion[];
+  mode: QuizMode;
+  pool: readonly QuizQuestion[];
   scrollRef: { current: ScrollViewInstance | null };
 }) {
   const locking = useRef(false);
-  const [session, setSession] = useState<Session>(() => createSession(primary));
+  const [session, setSession] = useState<Session>(() => createSession(pool));
+  const { misses } = useQuizMisses();
+  const pendingMisses = missIdsFor(misses, buildingId).length;
   const question = session.round[session.cursor];
   const outcome = session.outcomes[session.cursor];
+  /** 復習は解説を読むため、正解でも自動送りしない。 */
   const revealedCorrect =
-    session.phase === 'ask' && session.picked != null && outcome === 'correct' && !session.paused;
+    mode !== 'review' &&
+    session.phase === 'ask' &&
+    session.picked != null &&
+    outcome === 'correct' &&
+    !session.paused;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -141,7 +154,19 @@ function QuizRound({
   function retry() {
     locking.current = false;
     haptics.select();
-    setSession(createSession(primary));
+    setSession(createSession(pool));
+  }
+
+  function startReview() {
+    const ids = missIdsFor(misses, buildingId);
+    if (ids.length === 0) {
+      return;
+    }
+    haptics.select();
+    router.replace({
+      pathname: '/quiz/[id]',
+      params: { id: buildingId, mode: 'review', q: ids.join(',') },
+    });
   }
 
   function pick(choiceIndex: number) {
@@ -157,14 +182,16 @@ function QuizRound({
     const nextOutcome: Outcome = choice.correct ? 'correct' : 'wrong';
     if (choice.correct) {
       haptics.success();
+      void clearQuizMiss(buildingId, current.id).catch(() => undefined);
     } else {
       haptics.error();
+      void recordQuizMiss(buildingId, current.id).catch(() => undefined);
     }
     const outcomes = [...session.outcomes, nextOutcome];
     const correctCount = outcomes.filter((item) => item === 'correct').length;
     const last = session.cursor >= session.round.length - 1;
     setSession({ ...session, picked: choiceIndex, outcomes });
-    if (last) {
+    if (last && mode === 'play') {
       void recordQuizResult(buildingId, correctCount, session.round.length).catch(() => undefined);
     }
   }
@@ -194,23 +221,46 @@ function QuizRound({
   }
 
   if (question == null) {
-    return <Missing />;
+    return <Missing review={mode === 'review'} />;
   }
 
   if (session.phase === 'result') {
     const correct = session.outcomes.filter((item) => item === 'correct').length;
-    return <Result correct={correct} total={session.round.length} onRetry={retry} />;
+    return (
+      <Result
+        correct={correct}
+        total={session.round.length}
+        pendingMisses={pendingMisses}
+        onRetry={retry}
+        onReview={startReview}
+      />
+    );
   }
 
   const revealed = session.picked != null;
   const correct = outcome === 'correct';
-  const showNext = revealed && (!correct || session.paused);
-  const announcement = !revealed ? '' : correct ? '正解' : `不正解。${question.explanation}`;
+  const showNext = revealed && (mode === 'review' || !correct || session.paused);
+  const showExplanation = revealed && (!correct || mode === 'review');
+  const announcement = !revealed
+    ? ''
+    : correct
+      ? '正解'
+      : `不正解。${question.explanation}`;
 
   return (
     <View style={styles.block}>
       <View style={styles.progressRow}>
         <Progress total={session.round.length} cursor={session.cursor} outcomes={session.outcomes} />
+        {mode === 'review' ? (
+          <View
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel="復習"
+            style={styles.reviewChip}
+          >
+            <Icon name="book" size={theme.space.md} color={theme.color.brick} />
+          </View>
+        ) : null}
         {question.sources.length > 0 ? (
           <Pressable
             accessibilityRole="button"
@@ -240,18 +290,15 @@ function QuizRound({
           />
         ))}
       </View>
+      {showExplanation ? (
+        <QuizExplanation
+          buildingId={buildingId}
+          explanation={question.explanation}
+          initiallyOpen
+        />
+      ) : null}
       {showNext ? (
         <View style={styles.feedback}>
-          {!correct ? (
-            <Text
-              selectable
-              numberOfLines={2}
-              accessibilityLabel={question.explanation}
-              style={styles.explanation}
-            >
-              {question.explanation}
-            </Text>
-          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="次へ"
@@ -270,10 +317,18 @@ function QuizRound({
   );
 }
 
-function Missing() {
+function Missing({ review }: { review?: boolean }) {
   return (
-    <View accessibilityRole="text" accessibilityLabel="問題がありません" style={styles.missing}>
-      <Icon name="questionmark" size={theme.space.xl} color={theme.color.inkMuted} />
+    <View
+      accessibilityRole="text"
+      accessibilityLabel={review ? '復習する問題はありません' : '問題がありません'}
+      style={styles.missing}
+    >
+      <Icon
+        name={review ? 'checkmark' : 'questionmark'}
+        size={theme.space.xl}
+        color={theme.color.inkMuted}
+      />
     </View>
   );
 }
@@ -363,68 +418,50 @@ function ChoiceTile({
 function Result({
   correct,
   total,
+  pendingMisses,
   onRetry,
+  onReview,
 }: {
   correct: number;
   total: number;
+  pendingMisses: number;
   onRetry: () => void;
+  onReview: () => void;
 }) {
   return (
     <View style={styles.result}>
-      <ResultStars correct={correct} total={total} />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="もう一度"
-        onPress={onRetry}
-        style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
-      >
-        <Icon name="arrow.clockwise" size={theme.space.lg} color={theme.color.white} />
-        <Text style={styles.actionLabel}>もう一度</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function ResultStars({ correct, total }: { correct: number; total: number }) {
-  const reduced = useReducedMotion();
-  const progress = useSharedValue(reduced ? 1 : 0);
-
-  useEffect(() => {
-    progress.set(
-      withTiming(1, {
-        duration: reduced ? 0 : RESULT_MS,
-        easing: EASE_OUT,
-        reduceMotion: ReduceMotion.System,
-      }),
-    );
-  }, [progress, reduced]);
-
-  const animated = useAnimatedStyle(() => ({
-    opacity: progress.get(),
-    transform: [{ scale: 0.94 + progress.get() * 0.06 }],
-  }));
-
-  return (
-    <Animated.View
-      accessible
-      accessibilityRole="text"
-      accessibilityLabel={`${correct}問正解、全${total}問`}
-      style={[styles.stars, animated]}
-    >
-      {Array.from({ length: Math.max(total, 1) }, (_, index) => (
-        <View
-          key={index}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
+      <ScoreMarks
+        correct={correct}
+        total={total}
+        size="lg"
+        animate
+        accessibilityLabel={`${correct}問正解、全${total}問`}
+      />
+      <View style={styles.resultActions}>
+        {pendingMisses > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`復習 ${pendingMisses}問`}
+            onPress={onReview}
+            style={({ pressed }) => [styles.reviewAction, pressed && styles.actionPressed]}
+          >
+            <Icon name="book" size={theme.space.lg} color={theme.color.brick} />
+            <View style={styles.badge}>
+              <Text style={styles.badgeLabel}>{pendingMisses}</Text>
+            </View>
+          </Pressable>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="もう一度"
+          onPress={onRetry}
+          style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
         >
-          <Icon
-            name={index < correct ? 'star.fill' : 'star'}
-            size={theme.space.xl}
-            color={index < correct ? theme.color.brick : theme.color.inkMuted}
-          />
-        </View>
-      ))}
-    </Animated.View>
+          <Icon name="arrow.clockwise" size={theme.space.lg} color={theme.color.white} />
+          <Text style={styles.actionLabel}>もう一度</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -472,6 +509,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: theme.border.mark,
     borderColor: theme.color.inkMuted,
+  },
+  reviewChip: {
+    width: theme.hit,
+    height: theme.hit,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.color.brickWash,
   },
   source: {
     width: theme.hit,
@@ -522,11 +567,6 @@ const styles = StyleSheet.create({
   feedback: {
     gap: theme.space.sm,
   },
-  explanation: {
-    color: theme.color.ink,
-    fontSize: theme.font.body,
-    lineHeight: theme.font.body + theme.space.sm,
-  },
   action: {
     minHeight: theme.hit + theme.space.lg,
     flexDirection: 'row',
@@ -537,6 +577,18 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     borderCurve: 'continuous',
     backgroundColor: theme.color.leafDark,
+  },
+  reviewAction: {
+    minHeight: theme.hit + theme.space.lg,
+    minWidth: theme.hit + theme.space.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.space.xs,
+    paddingHorizontal: theme.space.md,
+    borderRadius: theme.radius.lg,
+    borderCurve: 'continuous',
+    backgroundColor: theme.color.brickWash,
   },
   actionPressed: {
     opacity: theme.opacity.pressed,
@@ -551,12 +603,22 @@ const styles = StyleSheet.create({
     gap: theme.space.lg,
     paddingTop: theme.space.xl,
   },
-  stars: {
-    minHeight: theme.space.xl,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+  resultActions: {
     gap: theme.space.sm,
+  },
+  badge: {
+    minWidth: theme.space.lg,
+    height: theme.space.lg,
+    paddingHorizontal: theme.space.xs,
+    borderRadius: theme.radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.color.brick,
+  },
+  badgeLabel: {
+    color: theme.color.white,
+    fontSize: theme.font.caption,
+    fontWeight: '700',
   },
   missing: {
     minHeight: theme.hit * 4,
