@@ -6,9 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EstimatedChip } from '@/components/EstimatedChip';
 import { Icon } from '@/components/Icon';
 import { MapThumb } from '@/components/MapThumb';
+import { ScoreMarks } from '@/components/ScoreMarks';
 import { haptics } from '@/lib/haptics';
 import { useBuildings } from '@/lib/content/useBuildings';
 import type { Building, BuildingCampus, BuildingDesignation } from '@/lib/content/buildings';
+import { missIdsFor, useQuizMisses } from '@/lib/quiz/misses';
 import { buildingsInCampusOrder } from '@/lib/quiz/order';
 import { useQuizResults } from '@/lib/quiz/results';
 import type { QuizResult } from '@/lib/quiz/score';
@@ -42,6 +44,7 @@ export function BuildingQuizList() {
   const { width } = useWindowDimensions();
   const buildings = useBuildings();
   const { ready, results } = useQuizResults();
+  const { ready: missesReady, misses } = useQuizMisses();
   const groups = useMemo(() => groupByCampus(buildings), [buildings]);
   const tile = (width - theme.space.lg * 2 - theme.space.sm) / 2;
 
@@ -60,6 +63,7 @@ export function BuildingQuizList() {
                 building={building}
                 result={ready ? results[building.id] : undefined}
                 showScore={ready}
+                missIds={missesReady ? missIdsFor(misses, building.id) : []}
                 width={tile}
               />
             ))}
@@ -74,21 +78,25 @@ function QuizTile({
   building,
   result,
   showScore,
+  missIds,
   width,
 }: {
   building: Building;
   result: QuizResult | undefined;
   showScore: boolean;
+  missIds: readonly string[];
   width: number;
 }) {
+  const missCount = missIds.length;
   const score =
     showScore && result != null
       ? `最高 ${result.bestCorrect} / ${result.total}${result.cleared ? '、クリア' : ''}`
       : '未挑戦';
+  const reviewLabel = missCount > 0 ? `復習 ${missCount}問。` : '';
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${building.name}のクイズ。${building.designation}。${building.positionEstimated ? '位置は推定。' : ''}${score}`}
+      accessibilityLabel={`${building.name}のクイズ。${building.designation}。${building.positionEstimated ? '位置は推定。' : ''}${score}。${reviewLabel}`}
       onPress={() => {
         haptics.select();
         router.push({ pathname: '/quiz/[id]', params: { id: building.id } });
@@ -101,6 +109,24 @@ function QuizTile({
           <View style={styles.chip}>
             <EstimatedChip interactive={false} />
           </View>
+        ) : null}
+        {missCount > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${building.name}の復習 ${missCount}問`}
+            hitSlop={theme.space.xs}
+            onPress={() => {
+              haptics.select();
+              router.push({
+                pathname: '/quiz/[id]',
+                params: { id: building.id, mode: 'review', q: missIds.join(',') },
+              });
+            }}
+            style={({ pressed }) => [styles.reviewBadge, pressed && styles.infoPressed]}
+          >
+            <Icon name="book" size={14} color={theme.color.white} />
+            <Text style={styles.reviewCount}>{missCount}</Text>
+          </Pressable>
         ) : null}
         <Pressable
           accessibilityRole="button"
@@ -122,27 +148,15 @@ function QuizTile({
         </Text>
       </View>
       {showScore ? (
-        <ScoreStars correct={result?.bestCorrect ?? 0} total={result?.total ?? 3} />
+        <ScoreMarks
+          correct={result?.bestCorrect ?? 0}
+          total={result?.total ?? 3}
+          size="sm"
+        />
       ) : (
         <View style={styles.starSlot} />
       )}
     </Pressable>
-  );
-}
-
-function ScoreStars({ correct, total }: { correct: number; total: number }) {
-  const count = Math.max(total, 1);
-  return (
-    <View style={styles.stars}>
-      {Array.from({ length: count }, (_, index) => (
-        <Icon
-          key={index}
-          name={index < correct ? 'star.fill' : 'star'}
-          size={16}
-          color={index < correct ? theme.color.brick : theme.color.inkMuted}
-        />
-      ))}
-    </View>
   );
 }
 
@@ -187,6 +201,25 @@ const styles = StyleSheet.create({
     left: theme.space.xs,
     bottom: theme.space.xs,
   },
+  reviewBadge: {
+    position: 'absolute',
+    left: theme.space.xs,
+    top: theme.space.xs,
+    minWidth: theme.hit - theme.space.sm,
+    height: theme.hit - theme.space.sm,
+    paddingHorizontal: theme.space.sm,
+    borderRadius: theme.radius.pill,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.space.xs,
+    backgroundColor: theme.color.brick,
+  },
+  reviewCount: {
+    color: theme.color.white,
+    fontSize: theme.font.caption,
+    fontWeight: '700',
+  },
   info: {
     position: 'absolute',
     top: theme.space.xs,
@@ -220,12 +253,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.font.heading,
     fontSize: theme.font.body,
     lineHeight: theme.font.body + theme.space.xs,
-  },
-  stars: {
-    flexDirection: 'row',
-    gap: theme.space.xs,
-    minHeight: theme.font.body + theme.space.xs,
-    paddingHorizontal: theme.space.xs,
   },
   starSlot: {
     height: theme.font.body + theme.space.xs,

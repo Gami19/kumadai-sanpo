@@ -16,6 +16,10 @@ export type IconName =
   | 'arrow.uturn.backward'
   | 'star'
   | 'star.fill'
+  | 'leaf'
+  | 'leaf.fill'
+  | 'book'
+  | 'building.2'
   | 'lock'
   | 'location'
   | 'location.fill'
@@ -39,6 +43,10 @@ const symbols = {
   'arrow.uturn.backward': { ios: 'arrow.uturn.backward', android: 'undo', web: 'undo' },
   star: { ios: 'star', android: 'star_border', web: 'star_border' },
   'star.fill': { ios: 'star.fill', android: 'star', web: 'star' },
+  leaf: { ios: 'leaf', android: 'eco', web: 'eco' },
+  'leaf.fill': { ios: 'leaf.fill', android: 'eco', web: 'eco' },
+  book: { ios: 'book', android: 'menu_book', web: 'menu_book' },
+  'building.2': { ios: 'building.2', android: 'apartment', web: 'apartment' },
   lock: { ios: 'lock', android: 'lock', web: 'lock' },
   location: { ios: 'location', android: 'location_on', web: 'location_on' },
   'location.fill': { ios: 'location.fill', android: 'my_location', web: 'my_location' },
