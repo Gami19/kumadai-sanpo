@@ -11,7 +11,7 @@
 
 ## iPhone（Expo Go）で起動する
 
-このアプリは Expo SDK 58 です。App Store の Expo Go 58.0.5 以降（SDK 58 対応）で開きます。EAS の設定（開発ビルド／Update）は入っていますが、`extra.eas.projectId` の紐づけと iPhone 実機ビルドは Apple Developer Program 加入後に行います（手順は `docs/EAS手順.md`）。日常の確認はこれまでどおり Expo Go で問題ありません。
+このアプリは Expo SDK 58 です。App Store の Expo Go 58.0.5 以降（SDK 58 対応）で開きます。EAS プロジェクト（`@koko-jyun15/kumadai-sanpo`）への紐づけは済み。iPhone 実機の開発ビルドは Apple Developer Program 加入後に行います（手順は `docs/EAS手順.md`）。日常の確認はこれまでどおり Expo Go で問題ありません。
 
 1. iPhone の Expo Go を App Store で最新にする
 2. パソコンで依存関係を入れる：`npm install`

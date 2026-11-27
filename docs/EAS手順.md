@@ -2,17 +2,9 @@
 
 MapLibre による地図タイル化と、知り合い・学内向けの内部配布の前提として、EAS の開発ビルドと EAS Update を使う。Expo アカウントは `koko-jyun15`、スラッグは `kumadai-sanpo`。アプリ ID は `com.gami19.kumadaisanpo`。
 
-## 初回：EAS プロジェクトの紐づけ（未実施なら）
+## EAS プロジェクトの紐づけ（済み）
 
-このリポジトリを初めて EAS に載せるときは、ローカルで Expo にログインしたうえで次を実行する。
-
-```bash
-npx eas-cli login
-export EXPO_TOKEN=（Expo ダッシュボードで発行したトークン）
-npx eas-cli init --non-interactive
-```
-
-`eas init` が `app.json` の `extra.eas.projectId` と `updates.url`（`https://u.expo.dev/<projectId>`）を埋める。いまはどちらも空欄なので、初回だけこの手順が必要。
+Expo プロジェクト `@koko-jyun15/kumadai-sanpo`（projectId: `c5b4d120-b58c-41ec-8ed0-27798ab5d54d`）に紐づ済み。`app.json` の `extra.eas.projectId` と `updates.url`（`https://u.expo.dev/<projectId>`）は設定済み。
 
 ## Apple Developer Program 加入後：iPhone 実機の開発ビルド
 
