@@ -1,5 +1,5 @@
 import { router, useIsFocused } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -26,6 +26,8 @@ import { stampGate, type StampGate } from '@/lib/stamp/gate';
 import { buildingsInCampusOrder } from '@/lib/quiz/order';
 import { theme } from '@/theme/tokens';
 
+import { MasteryModal, type MasteryModalKind } from './MasteryModal';
+import { MasterySection } from './MasterySection';
 import { StampPreviewModal } from './StampPreviewModal';
 import { howToGetLabel, STAMP_HINT } from './stampCopy';
 import { recoverStampLocation, useStampFix } from './useStampFix';
@@ -79,8 +81,8 @@ export function NotebookHome() {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [seen, setSeen] = useState<boolean | null>(null);
   const [districtSeen, setDistrictSeen] = useState<ReadonlySet<CampusId> | null>(null);
-  const wroteSeen = useRef(false);
-  const wroteDistrictKey = useRef('');
+  const [masteryKind, setMasteryKind] = useState<MasteryModalKind | null>(null);
+  const [masteryVisible, setMasteryVisible] = useState(false);
   const ordered = buildingsInCampusOrder(buildings);
   const tile = (width - theme.space.lg * 2 - theme.space.sm) / 2;
   const stampedIds = new Set(notebook.stamps.map((stamp) => stamp.buildingId));
@@ -114,6 +116,34 @@ export function NotebookHome() {
     }, 200);
   };
 
+  const openMastery = (kind: MasteryModalKind) => {
+    haptics.select();
+    setMasteryKind(kind);
+    setMasteryVisible(true);
+  };
+
+  const closeMastery = () => {
+    const current = masteryKind;
+    setMasteryVisible(false);
+    setTimeout(() => {
+      setMasteryKind(null);
+    }, 200);
+    if (current?.mode !== 'celebrate') {
+      return;
+    }
+    if (current.campusId != null) {
+      setDistrictSeen((prev) => {
+        const next = new Set<CampusId>(prev ?? []);
+        next.add(current.campusId!);
+        void writeDistrictSeen([...next]);
+        return next;
+      });
+      return;
+    }
+    setSeen(true);
+    void writeCompletionSeen();
+  };
+
   useEffect(() => {
     let live = true;
     void readCompletionSeen().then((value) => {
@@ -131,34 +161,32 @@ export function NotebookHome() {
     };
   }, []);
 
-  // 区画／全制覇の印は出さないが、seen キーは互換のため静かに更新する。
+  // まだ見ていない区画制覇／全制覇を、専用モーダルで出す（建物マスには出さない）。
   const stampedKey = ordered.map((building) => (stampedIds.has(building.id) ? building.id : '')).join(',');
   useEffect(() => {
-    if (districtSeen == null) {
+    if (districtSeen == null || masteryVisible || masteryKind != null) {
       return;
     }
     const ids = new Set(stampedKey.length === 0 ? [] : stampedKey.split(','));
-    const missing = CAMPUS_IDS.filter(
+    const pendingDistrict = CAMPUS_IDS.find(
       (id) => !districtSeen.has(id) && isCampusComplete(ordered, id, ids),
     );
-    const key = missing.join(',');
-    if (key.length === 0 || wroteDistrictKey.current === key) {
+    const celebrateFull = complete && seen === false;
+    if (pendingDistrict == null && !celebrateFull) {
       return;
     }
-    wroteDistrictKey.current = key;
-    const next = new Set<CampusId>([...districtSeen, ...missing]);
-    setDistrictSeen(next);
-    void writeDistrictSeen([...next]);
-  }, [districtSeen, ordered, stampedKey]);
-
-  useEffect(() => {
-    if (!complete || seen !== false || wroteSeen.current) {
-      return;
-    }
-    wroteSeen.current = true;
-    setSeen(true);
-    void writeCompletionSeen();
-  }, [complete, seen]);
+    const timer = setTimeout(() => {
+      haptics.stamp();
+      setMasteryKind({
+        mode: 'celebrate',
+        campusId: pendingDistrict ?? null,
+      });
+      setMasteryVisible(true);
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [complete, districtSeen, masteryKind, masteryVisible, ordered, seen, stampedKey]);
 
   const gateFor = (building: Building): StampGate => {
     const spot = spots.find((item) => item.id === building.id);
@@ -268,6 +296,16 @@ export function NotebookHome() {
                 );
               })}
             </View>
+            <MasterySection
+              buildings={ordered}
+              stampedIds={stampedIds}
+              onOpenDistrict={(campusId) => {
+                openMastery({ mode: 'preview', campusId });
+              }}
+              onOpenFull={() => {
+                openMastery({ mode: 'preview', campusId: null });
+              }}
+            />
             {favoritePeople.length > 0 ? (
               <View style={styles.people}>
                 <Text style={styles.section}>人物</Text>
@@ -331,6 +369,15 @@ export function NotebookHome() {
               recoverStampLocation(gate.block, fix.retry);
             }
           }}
+        />
+      ) : null}
+      {masteryKind != null ? (
+        <MasteryModal
+          kind={masteryKind}
+          buildings={ordered}
+          stampedIds={stampedIds}
+          visible={masteryVisible}
+          onClose={closeMastery}
         />
       ) : null}
     </>
