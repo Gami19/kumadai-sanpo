@@ -16,8 +16,12 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { EstimatedChip } from '@/components/EstimatedChip';
 import { Icon } from '@/components/Icon';
 import { MapThumb } from '@/components/MapThumb';
-import { NameSeal } from '@/components/NameSeal';
+import { BuildingStamp } from '@/components/stamp/BuildingStamp';
+import { frameForCampus } from '@/components/stamp/catalog';
+import { StampBlank } from '@/components/stamp/StampBlank';
+import { campusIdForLabel } from '@/features/map/campuses';
 import { haptics } from '@/lib/haptics';
+import { useBuildings } from '@/lib/content/useBuildings';
 import { theme } from '@/theme/tokens';
 
 type Stamp = 'unknown' | 'on' | 'off';
@@ -56,6 +60,8 @@ function rubberband(overshoot: number, dimension: number, constant = 0.55) {
 
 export function SpotPreviewSheet({ id, name, summary, estimated, stamp, bottom, onClose }: Props) {
   const reduced = useReducedMotion();
+  const buildings = useBuildings();
+  const campusId = campusIdForLabel(buildings.find((item) => item.id === id)?.campus ?? '');
   const translateY = useSharedValue(reduced ? 0 : 360);
   const height = useSharedValue(360);
   const context = useSharedValue(0);
@@ -176,10 +182,14 @@ export function SpotPreviewSheet({ id, name, summary, estimated, stamp, bottom, 
                   accessibilityLabel={stamp === 'on' ? '押印済み' : '未押印'}
                   style={styles.mark}
                 >
-                  {stamp === 'on' ? (
-                    <NameSeal name={name} size={MARK} />
+                  {stamp === 'on' && campusId != null ? (
+                    <BuildingStamp buildingId={id} campusId={campusId} size={MARK} />
                   ) : (
-                    <View style={styles.emptyMark} />
+                    <StampBlank
+                      frame={campusId == null ? 'circle' : frameForCampus(campusId)}
+                      size={MARK}
+                      tone="ready"
+                    />
                   )}
                 </View>
               )}
@@ -270,14 +280,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -theme.space.xs,
     bottom: -theme.space.xs,
-  },
-  emptyMark: {
-    width: MARK,
-    height: MARK,
-    borderRadius: MARK / 2,
-    borderWidth: theme.border.mark,
-    borderColor: theme.color.brick,
-    backgroundColor: theme.color.paper,
   },
   copy: {
     flex: 1,

@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { router, useIsFocused } from 'expo-router';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
@@ -15,22 +15,32 @@ import { EstimatedChip } from '@/components/EstimatedChip';
 import { Icon } from '@/components/Icon';
 import { MapThumb } from '@/components/MapThumb';
 import { NameSeal } from '@/components/NameSeal';
+import { MasteryStamp } from '@/components/stamp/MasteryStamp';
 import { useUndoToast } from '@/components/UndoToast';
 import { mapTargetForBuilding } from '@/features/buildings/mapTarget';
+import { campusIdForLabel, campuses, type CampusId } from '@/features/map/campuses';
 import { spots } from '@/features/map/spots';
 import type { Building } from '@/lib/content/buildings';
 import { useBuildings } from '@/lib/content/useBuildings';
 import { usePeople } from '@/lib/content/usePeople';
 import { haptics } from '@/lib/haptics';
 import { readCompletionSeen, writeCompletionSeen } from '@/lib/notebook/completion';
+import { readDistrictSeen, writeDistrictSeen } from '@/lib/notebook/districtSeen';
+import { CAMPUS_IDS, isCampusComplete } from '@/lib/notebook/districts';
 import type { FavoriteRecord, StampRecord } from '@/lib/notebook/parse';
 import { NotebookStorageError } from '@/lib/notebook/storage';
 import { useNotebook } from '@/lib/notebook/useNotebook';
+import { stampGate, type StampGate } from '@/lib/stamp/gate';
 import { buildingsInCampusOrder } from '@/lib/quiz/order';
 import { theme } from '@/theme/tokens';
 
-/** 印の顔。44pt より大きく、押した場所だと形で分かる。 */
-const SEAL = 56;
+import { StampControl } from './StampControl';
+import { recoverStampLocation, useStampFix } from './useStampFix';
+
+/** 円周の文字が読める大きさ。写真の中央に押す。 */
+const SEAL = 104;
+const DISTRICT_SEAL = 120;
+const FULL_SEAL = 144;
 const RING = 104;
 const RING_DOT = theme.space.sm;
 const RING_RADIUS = 40;
@@ -65,8 +75,10 @@ function openBuilding(building: Building) {
 
 export function NotebookHome() {
   const insets = useSafeAreaInsets();
+  const focused = useIsFocused();
   const reduced = useReducedMotion();
   const { width } = useWindowDimensions();
+  const fix = useStampFix(focused);
   const buildings = useBuildings();
   const people = usePeople();
   const notebook = useNotebook();
@@ -74,8 +86,10 @@ export function NotebookHome() {
   const [popId, setPopId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [seen, setSeen] = useState<boolean | null>(null);
+  const [districtSeen, setDistrictSeen] = useState<ReadonlySet<CampusId> | null>(null);
   const [celebrationDone, setCelebrationDone] = useState(false);
   const wroteSeen = useRef(false);
+  const wroteDistrictKey = useRef('');
   const ordered = buildingsInCampusOrder(buildings);
   const tile = (width - theme.space.lg * 2 - theme.space.sm) / 2;
   const stampedIds = new Set(notebook.stamps.map((stamp) => stamp.buildingId));
@@ -96,12 +110,42 @@ export function NotebookHome() {
         setSeen(value);
       }
     });
+    void readDistrictSeen().then((value) => {
+      if (live) {
+        setDistrictSeen(value);
+      }
+    });
     return () => {
       live = false;
     };
   }, []);
 
-  const celebrating = complete && seen === false && !reduced && !celebrationDone;
+  const stampedKey = ordered.map((building) => (stampedIds.has(building.id) ? building.id : '')).join(',');
+  const pendingDistrict =
+    districtSeen == null
+      ? null
+      : (CAMPUS_IDS.find(
+          (id) => !districtSeen.has(id) && isCampusComplete(ordered, id, stampedIds),
+        ) ?? null);
+  const showDistrict = pendingDistrict != null && !reduced;
+  const celebrating = !showDistrict && complete && seen === false && !reduced && !celebrationDone;
+  const doneCampuses = CAMPUS_IDS.filter((id) => isCampusComplete(ordered, id, stampedIds));
+
+  useEffect(() => {
+    if (!reduced || districtSeen == null) {
+      return;
+    }
+    const ids = new Set(stampedKey.length === 0 ? [] : stampedKey.split(','));
+    const missing = CAMPUS_IDS.filter(
+      (id) => !districtSeen.has(id) && isCampusComplete(ordered, id, ids),
+    );
+    const key = missing.join(',');
+    if (key.length === 0 || wroteDistrictKey.current === key) {
+      return;
+    }
+    wroteDistrictKey.current = key;
+    void writeDistrictSeen([...new Set<CampusId>([...districtSeen, ...missing])]);
+  }, [districtSeen, ordered, reduced, stampedKey]);
 
   useEffect(() => {
     if (!complete || seen !== false || !reduced || wroteSeen.current) {
@@ -118,6 +162,21 @@ export function NotebookHome() {
     void writeCompletionSeen();
   }, []);
 
+  const finishDistrict = useCallback((id: CampusId) => {
+    setDistrictSeen((current) => {
+      const next = new Set<CampusId>(current ?? []);
+      next.add(id);
+      void writeDistrictSeen([...next]);
+      return next;
+    });
+  }, []);
+
+  const gateFor = (building: Building): StampGate => {
+    const spot = spots.find((item) => item.id === building.id);
+    const point = spot != null && spot.lat != null && spot.lon != null ? { lat: spot.lat, lon: spot.lon } : null;
+    return stampGate(fix.state, point);
+  };
+
   const fail = (error: unknown) => {
     showToast(storageMessage(error));
   };
@@ -128,6 +187,9 @@ export function NotebookHome() {
     }
     const existing = notebook.stamps.find((item) => item.buildingId === building.id);
     if (existing == null) {
+      if (!gateFor(building).ok) {
+        return;
+      }
       haptics.stamp();
       setPopId(building.id);
       setPendingId(building.id);
@@ -196,20 +258,30 @@ export function NotebookHome() {
               const on = stampedIds.has(building.id);
               const spot = spots.find((item) => item.id === building.id);
               const onMap = mapTargetForBuilding(building, spot) != null;
+              const campusId = campusIdForLabel(building.campus);
               return (
                 <StampFrame
                   key={building.id}
                   building={building}
+                  campusId={campusId}
                   width={tile}
                   stamped={on}
                   favorite={notebook.favoriteBuildings.some((item) => item.id === building.id)}
                   pop={popId === building.id && on}
+                  gate={gateFor(building)}
                   onMap={onMap}
                   onOpen={() => {
                     openBuilding(building);
                   }}
                   onStamp={() => {
                     stamp(building);
+                  }}
+                  onRecover={() => {
+                    const gate = gateFor(building);
+                    if (!gate.ok) {
+                      haptics.select();
+                      recoverStampLocation(gate.block, fix.retry);
+                    }
                   }}
                   onFavorite={() => {
                     favorite(building);
@@ -218,6 +290,23 @@ export function NotebookHome() {
               );
             })}
           </View>
+          {doneCampuses.length > 0 || complete ? (
+            <View style={styles.mastery}>
+              {doneCampuses.map((id) => {
+                const label = campuses.find((campus) => campus.id === id)?.label ?? '';
+                return (
+                  <View key={id} accessible accessibilityLabel={`${label}を制覇`}>
+                    <MasteryStamp campusId={id} size={DISTRICT_SEAL} />
+                  </View>
+                );
+              })}
+              {complete ? (
+                <View accessible accessibilityLabel={`${ordered.length}件すべてにスタンプが付きました`}>
+                  <MasteryStamp size={FULL_SEAL} />
+                </View>
+              ) : null}
+            </View>
+          ) : null}
           {favoritePeople.length > 0 ? (
             <View style={styles.people}>
               <Text style={styles.section}>人物</Text>
@@ -251,8 +340,24 @@ export function NotebookHome() {
               })}
             </View>
           ) : null}
+          {showDistrict && pendingDistrict != null ? (
+            <LandingOverlay
+              key={pendingDistrict}
+              label={`${campuses.find((campus) => campus.id === pendingDistrict)?.label ?? ''}の建物がそろいました`}
+              onDone={() => {
+                finishDistrict(pendingDistrict);
+              }}
+            >
+              <MasteryStamp campusId={pendingDistrict} size={FULL_SEAL} pop />
+            </LandingOverlay>
+          ) : null}
           {celebrating && complete ? (
-            <CompletionStamp total={ordered.length} onDone={finishCelebration} />
+            <LandingOverlay
+              label={`${ordered.length}件すべてにスタンプが付きました`}
+              onDone={finishCelebration}
+            >
+              <MasteryStamp size={theme.space.xl * 4} pop />
+            </LandingOverlay>
           ) : null}
         </View>
       ) : null}
@@ -301,7 +406,15 @@ function ProgressRing({ marks }: { marks: readonly boolean[] }) {
   );
 }
 
-function CompletionStamp({ total, onDone }: { total: number; onDone: () => void }) {
+function LandingOverlay({
+  label,
+  onDone,
+  children,
+}: {
+  label: string;
+  onDone: () => void;
+  children: ReactNode;
+}) {
   const opacity = useSharedValue(1);
   const animated = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
@@ -326,11 +439,11 @@ function CompletionStamp({ total, onDone }: { total: number; onDone: () => void 
     <Animated.View
       pointerEvents="none"
       accessibilityLiveRegion="polite"
-      accessibilityLabel={`${total}件すべてにスタンプが付きました`}
+      accessibilityLabel={label}
       style={[styles.celebration, animated]}
     >
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <NameSeal name="完" size={theme.space.xl * 3} pop />
+        {children}
       </View>
     </Animated.View>
   );
@@ -338,23 +451,29 @@ function CompletionStamp({ total, onDone }: { total: number; onDone: () => void 
 
 function StampFrame({
   building,
+  campusId,
   width,
   stamped,
   favorite,
   pop,
+  gate,
   onMap,
   onOpen,
   onStamp,
+  onRecover,
   onFavorite,
 }: {
   building: Building;
+  campusId: CampusId | null;
   width: number;
   stamped: boolean;
   favorite: boolean;
   pop: boolean;
+  gate: StampGate;
   onMap: boolean;
   onOpen: () => void;
   onStamp: () => void;
+  onRecover: () => void;
   onFavorite: () => void;
 }) {
   const place = onMap ? `${building.name}を地図で見る` : `${building.name}の詳細`;
@@ -384,24 +503,21 @@ function StampFrame({
           {building.name}
         </Text>
       </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={stamped ? `${building.name}のスタンプを消す` : `${building.name}にスタンプを押す`}
-        accessibilityState={{ selected: stamped }}
-        onPress={onStamp}
-        pressRetentionOffset={theme.space.md}
-        style={({ pressed }) => [
-          styles.sealHit,
-          { top: (width - SEAL) / 2, left: (width - SEAL) / 2 },
-          pressed && styles.sealPressed,
-        ]}
-      >
-        {stamped ? (
-          <NameSeal name={building.name} size={SEAL} pop={pop} />
-        ) : (
-          <View style={styles.emptySeal} />
-        )}
-      </Pressable>
+      {campusId != null ? (
+        <View style={[styles.sealHit, { top: (width - SEAL) / 2, left: (width - SEAL) / 2 }]}>
+          <StampControl
+            building={building}
+            campusId={campusId}
+            stamped={stamped}
+            pop={pop}
+            size={SEAL}
+            gate={gate}
+            onStamp={onStamp}
+            onRemove={onStamp}
+            onRecover={onRecover}
+          />
+        </View>
+      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
@@ -429,7 +545,7 @@ const styles = StyleSheet.create({
     gap: theme.space.lg,
   },
   complete: {
-    backgroundColor: theme.color.brickWash,
+    backgroundColor: theme.color.vermilionWash,
   },
   warning: {
     color: theme.color.brick,
@@ -450,8 +566,8 @@ const styles = StyleSheet.create({
     borderWidth: theme.border.mark,
   },
   ringDotOn: {
-    backgroundColor: theme.color.brick,
-    borderColor: theme.color.brick,
+    backgroundColor: theme.color.vermilion,
+    borderColor: theme.color.vermilion,
   },
   ringDotOff: {
     backgroundColor: theme.color.paper,
@@ -507,14 +623,13 @@ const styles = StyleSheet.create({
   sealPressed: {
     opacity: theme.opacity.pressed,
   },
-  emptySeal: {
-    width: SEAL,
-    height: SEAL,
-    borderRadius: theme.radius.pill,
-    borderWidth: theme.border.mark,
-    borderStyle: 'dashed',
-    borderColor: theme.color.brick,
-    backgroundColor: theme.color.paper,
+  mastery: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.space.sm,
+    marginTop: theme.space.lg,
   },
   heart: {
     position: 'absolute',
