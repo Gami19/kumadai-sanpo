@@ -20,7 +20,7 @@ import sharp from 'sharp';
 const require = createRequire(import.meta.url);
 const { optimize } = require('svgo');
 
-const ALL_IDS = [
+const BUILDING_IDS = [
   'akamon',
   'goko-kinenkan',
   'honbu',
@@ -30,6 +30,17 @@ const ALL_IDS = [
   'yakuyo-shokubutsuen',
   'yamazaki-kinenkan',
 ];
+
+/** 区画制覇・全制覇の原画。ファイル名は `<id>-stamp.svg`。 */
+const MASTERY_IDS = [
+  'seiha-kurokami-kita',
+  'seiha-kurokami-minami',
+  'seiha-honjo',
+  'seiha-ooe',
+  'zenseiha',
+];
+
+const ALL_IDS = [...BUILDING_IDS, ...MASTERY_IDS];
 
 const ids = process.argv.slice(2);
 const targets = ids.length > 0 ? ids : ALL_IDS;
@@ -191,9 +202,32 @@ function exportName(id) {
   return `${id.toUpperCase().replace(/-/g, '_')}_STAMP`;
 }
 
+function svgoConfigFor(id) {
+  // 全制覇は path が多く 353KB 級。精度 1 で十分小さくし、紫紺・うこんは保つ。
+  if (id === 'zenseiha') {
+    return {
+      ...SVGO_CONFIG,
+      floatPrecision: 1,
+      plugins: [
+        'preset-default',
+        { name: 'convertPathData', params: { floatPrecision: 1, applyTransforms: true } },
+        { name: 'cleanupNumericValues', params: { floatPrecision: 1 } },
+        'removeXMLNS',
+        {
+          name: 'addAttributesToSVGElement',
+          params: {
+            attributes: [{ preserveAspectRatio: 'xMidYMid meet' }],
+          },
+        },
+      ],
+    };
+  }
+  return SVGO_CONFIG;
+}
+
 async function processOne(id) {
   const { cleaned, width, height, kept, removed, total, inkRatio } = await cleanSvg(id);
-  const { data: optXml } = optimize(cleaned, SVGO_CONFIG);
+  const { data: optXml } = optimize(cleaned, svgoConfigFor(id));
   let xml = optXml;
   if (!/xmlns=/.test(xml)) {
     xml = xml.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');

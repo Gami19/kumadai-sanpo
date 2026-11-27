@@ -1,6 +1,8 @@
 import type { CampusId } from '@/features/map/campuses';
 import { theme } from '@/theme/tokens';
 
+import { ArtworkStamp } from './ArtworkStamp';
+import { artworkForCampus, artworkForFullMastery } from './artwork/registry';
 import { DISTRICT_FACES, frameForCampus, FULL_FACE } from './catalog';
 import { InkStamp } from './InkStamp';
 
@@ -11,9 +13,13 @@ type Props = {
   pop?: boolean;
 };
 
-/** 区画制覇は紫紺の一色。全制覇はうこんと紫紺。建物印とは別の欄で出す。 */
+/** 区画制覇・全制覇。原画があればそれを使い、なければ自作の紫紺印へ戻る。 */
 export function MasteryStamp({ campusId, size = 120, pop = false }: Props) {
   if (campusId == null) {
+    const artwork = artworkForFullMastery();
+    if (artwork != null) {
+      return <ArtworkStamp artwork={artwork} size={size} pop={pop} />;
+    }
     return (
       <InkStamp
         frame="circle"
@@ -27,6 +33,10 @@ export function MasteryStamp({ campusId, size = 120, pop = false }: Props) {
         pop={pop}
       />
     );
+  }
+  const artwork = artworkForCampus(campusId);
+  if (artwork != null) {
+    return <ArtworkStamp artwork={artwork} size={size} pop={pop} />;
   }
   const face = DISTRICT_FACES[campusId];
   return (
