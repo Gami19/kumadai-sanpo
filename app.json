@@ -2,14 +2,23 @@
   "expo": {
     "name": "熊大さんぽ",
     "slug": "kumadai-sanpo",
+    "owner": "koko-jyun15",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "kumadai-sanpo",
     "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": ""
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gami19.kumadaisanpo"
     },
     "android": {
+      "package": "com.gami19.kumadaisanpo",
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
@@ -37,6 +46,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }
