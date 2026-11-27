@@ -619,6 +619,7 @@ const styles = StyleSheet.create({
     height: SEAL,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
   sealPressed: {
     opacity: theme.opacity.pressed,
