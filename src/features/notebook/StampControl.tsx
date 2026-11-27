@@ -65,7 +65,10 @@ export function StampControl({
         }
       }}
       pressRetentionOffset={theme.space.md}
-      style={({ pressed }) => [{ width: size, height: size }, pressed && { opacity: theme.opacity.pressed }]}
+      style={({ pressed }) => [
+        { width: size, height: size, overflow: 'visible' },
+        pressed && { opacity: theme.opacity.pressed },
+      ]}
     >
       {stamped ? (
         <BuildingStamp buildingId={building.id} campusId={campusId} size={size} pop={pop} />

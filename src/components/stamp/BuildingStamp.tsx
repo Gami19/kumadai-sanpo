@@ -1,6 +1,8 @@
 import type { CampusId } from '@/features/map/campuses';
 import { theme } from '@/theme/tokens';
 
+import { ArtworkStamp } from './ArtworkStamp';
+import { artworkForBuilding } from './artwork/registry';
 import { BUILDING_FACES, frameForCampus } from './catalog';
 import { InkStamp } from './InkStamp';
 
@@ -11,8 +13,12 @@ type Props = {
   pop?: boolean;
 };
 
-/** 建物印。全区画とも朱色で、枠の形だけが区画を分ける。 */
+/** 建物印。原画があればそれを使い、なければ駅スタンプ型の自作へ戻る。 */
 export function BuildingStamp({ buildingId, campusId, size = 44, pop = false }: Props) {
+  const artwork = artworkForBuilding(buildingId);
+  if (artwork != null) {
+    return <ArtworkStamp artwork={artwork} size={size} pop={pop} />;
+  }
   const face = BUILDING_FACES[buildingId];
   if (face == null) {
     return null;
