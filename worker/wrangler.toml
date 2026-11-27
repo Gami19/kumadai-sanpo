@@ -1,0 +1,47 @@
+# コンテンツ配信用 Worker（dev / 本番）
+# account_id は書かない。デプロイ時は CLOUDFLARE_ACCOUNT_ID を渡す。
+name = "kumadai-content"
+main = "src/index.ts"
+compatibility_date = "2026-11-27"
+workers_dev = true
+preview_urls = false
+
+[observability]
+enabled = true
+
+[observability.traces]
+enabled = true
+
+# --env なしのデプロイは避ける。開発確認は --env dev を使う。
+[vars]
+CACHE_CONTROL = "public, max-age=300"
+
+# 既存 Worker 名 kumadai-content-dev に合わせる（既定の name-env 連結だとずれる）
+[env.dev]
+name = "kumadai-content-dev"
+workers_dev = true
+preview_urls = false
+
+[env.dev.vars]
+CACHE_CONTROL = "no-store"
+
+[env.dev.observability]
+enabled = true
+
+[env.dev.observability.traces]
+enabled = true
+
+# 既存 Worker 名 kumadai-content に合わせる（既定だと kumadai-content-production になる）
+[env.production]
+name = "kumadai-content"
+workers_dev = true
+preview_urls = false
+
+[env.production.vars]
+CACHE_CONTROL = "public, max-age=300"
+
+[env.production.observability]
+enabled = true
+
+[env.production.observability.traces]
+enabled = true

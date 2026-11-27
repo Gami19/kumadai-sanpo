@@ -1,5 +1,7 @@
 import buildingsDocument from '../../../content/buildings.json';
 
+import { fetchContentJson } from './fetchTimeout';
+
 /** 配信先が未設定のときは null。Worker は別作業で、ここでは URL の口だけを開ける。 */
 export function contentBuildingsUrl(): string | null {
   const base = process.env.EXPO_PUBLIC_CONTENT_URL?.trim() ?? '';
@@ -203,7 +205,7 @@ export async function loadBuildings(): Promise<readonly Building[]> {
     return bundledBuildings;
   }
   try {
-    const response = await fetch(url);
+    const response = await fetchContentJson(url);
     if (!response.ok) {
       return bundledBuildings;
     }

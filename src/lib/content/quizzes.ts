@@ -1,6 +1,8 @@
 import type { ContentSource } from './buildings';
 import quizzesDocument from '../../../content/quizzes.json';
 
+import { fetchContentJson } from './fetchTimeout';
+
 /** 配信先が未設定のときは null。建物本文と同じく、URL の口だけを開ける。 */
 export function contentQuizzesUrl(): string | null {
   const base = process.env.EXPO_PUBLIC_CONTENT_URL?.trim() ?? '';
@@ -182,7 +184,7 @@ export async function loadQuizzes(): Promise<readonly QuizQuestion[]> {
     return bundledQuizzes;
   }
   try {
-    const response = await fetch(url);
+    const response = await fetchContentJson(url);
     if (!response.ok) {
       return bundledQuizzes;
     }

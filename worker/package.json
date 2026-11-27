@@ -1,0 +1,16 @@
+{
+  "name": "kumadai-content-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env dev",
+    "deploy:dev": "wrangler deploy --env dev",
+    "deploy:production": "wrangler deploy --env production",
+    "types": "wrangler types --env dev --include-runtime false --include-main-module false --strict-vars false"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "wrangler": "^4.51.0"
+  }
+}
