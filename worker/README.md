@@ -6,6 +6,7 @@
 - 秘密情報・ユーザーデータは扱わない
 - Worker 名：dev = `kumadai-content-dev`、本番 = `kumadai-content`（作成済み）
 - workers.dev を利用する（独自ドメインなし）
+- プレビュー URL は使わない（`wrangler.toml` で `preview_urls = false`）
 
 ## ローカル確認
 
