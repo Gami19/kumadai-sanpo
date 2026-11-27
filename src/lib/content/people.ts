@@ -2,6 +2,8 @@ import type { ContentSource } from './buildings';
 
 import peopleDocument from '../../../content/people.json';
 
+import { fetchContentJson } from './fetchTimeout';
+
 /** 配信先が未設定のときは null。建物と同じく、Worker からの差し替え口だけを開ける。 */
 export function contentPeopleUrl(): string | null {
   const base = process.env.EXPO_PUBLIC_CONTENT_URL?.trim() ?? '';
@@ -203,7 +205,7 @@ export async function loadPeople(): Promise<readonly Person[]> {
     return bundledPeople;
   }
   try {
-    const response = await fetch(url);
+    const response = await fetchContentJson(url);
     if (!response.ok) {
       return bundledPeople;
     }

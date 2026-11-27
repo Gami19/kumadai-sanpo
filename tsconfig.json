@@ -14,5 +14,9 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "src/types/csv.d.ts"
+  ],
+  "exclude": [
+    "worker",
+    "node_modules"
   ]
 }
