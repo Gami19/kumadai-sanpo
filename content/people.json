@@ -4,10 +4,10 @@
     {
       "id": "natsume-soseki",
       "name": "夏目漱石",
-      "reading": "未確認",
+      "reading": "なつめ そうせき",
       "nameAlt": "夏目金之助",
       "birthYear": "1867",
-      "deathYear": "未確認",
+      "deathYear": "1916",
       "role": "第五高等学校 英語教員（嘱託のあと教授）",
       "period": "1896年（明治29年）～1903年（明治36年）。熊本にいたのは主に1896年4月から1900年の英国留学出発まで。留学中も五高に籍を置き、帰国後に辞職。",
       "predecessorSchool": "第五高等学校",
@@ -17,7 +17,10 @@
         "大学公式の「大学の歴史散策」では、表門（赤門）について漱石の句「いかめしき門を入れば蕎麦の花」が紹介されています。構内には銅像・碑・句碑があります。",
         "五高記念館によると、生涯の俳句のうち約4割を熊本で詠み、五高を詠んだ「五高吟」が29句あります。『草枕』『二百十日』『三四郎』『吾輩は猫である』などは、熊本時代の経験をもとに書かれた、と同ページは記しています。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan", "akamon"],
+      "relatedBuildingIds": [
+        "goko-kinenkan",
+        "akamon"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜教師〜（熊本大学五高記念館）",
@@ -30,6 +33,14 @@
         {
           "title": "ナンバースクールの偉功を感じて。「熊本大学　第五高等学校記念館」（熊本大学）",
           "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/kouhou/kouhoushi/kumadainow/labo/2014/k270330"
+        },
+        {
+          "title": "夏目, 漱石, 1867-1916（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00054222"
+        },
+        {
+          "title": "夏目漱石｜近代日本人の肖像（国立国会図書館）",
+          "url": "https://www.ndl.go.jp/portrait/datas/307"
         }
       ]
     },
@@ -39,7 +50,7 @@
       "reading": "未確認",
       "nameAlt": "小泉八雲",
       "birthYear": "1850",
-      "deathYear": "未確認",
+      "deathYear": "1904",
       "role": "第五高等中学校（のち第五高等学校）英語・ラテン語教員",
       "period": "1891年（明治24年）～1894年（明治27年）。大学広報は「明治24年11月から27年10月まで」とも記しています。",
       "predecessorSchool": "第五高等中学校 / 第五高等学校",
@@ -49,7 +60,9 @@
         "1894年1月27日の講演『極東の将来』の結びは、大学構内の碑に刻まれています（大学公式「大学の歴史散策」、五高記念館）。碑は1962年、五高開校75周年を記念して五高同窓会が建てました。",
         "大学公式「大学の歴史散策」と五高記念館によると、レリーフは没後100回忌の2004年に熊本大学の有志などにより建立され、制作は本学名誉教授（教育学部）で彫刻家の石原昌一です。ハーンは五高の気質を、大学広報が「熊本スピリッツ」として紹介しています。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜教師〜（熊本大学五高記念館）",
@@ -62,6 +75,10 @@
         {
           "title": "ナンバースクールの偉功を感じて。「熊本大学　第五高等学校記念館」（熊本大学）",
           "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/kouhou/kouhoushi/kumadainow/labo/2014/k270330"
+        },
+        {
+          "title": "Hearn, Lafcadio, 1850-1904（Library of Congress Name Authority）",
+          "url": "https://id.loc.gov/authorities/names/n79073520.html"
         }
       ]
     },
@@ -71,7 +88,7 @@
       "reading": "かのう じごろう",
       "nameAlt": "",
       "birthYear": "1860",
-      "deathYear": "未確認",
+      "deathYear": "1938",
       "role": "第五高等中学校 第3代校長",
       "period": "1891年（明治24年）～1893年（明治26年）",
       "predecessorSchool": "第五高等中学校",
@@ -81,7 +98,9 @@
         "五高記念館の教師ページによると、1882年に講道館を開き、柔道の普及に尽力しました。五高校長時代に、ハーンが「jujutsu」を執筆して欧米へ紹介した、と記されています。",
         "大学公式「大学の歴史散策」によると、構内の碑は嘉納が揮毫した「順道制勝行不害人」の転刻で、原本は五高記念館に展示されています。1965年、開校77周年を記念して五高同窓会が建立しました。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜沿革〜（熊本大学五高記念館）",
@@ -98,13 +117,21 @@
         {
           "title": "沿革（熊本大学医学部）",
           "url": "https://www.medphas.kumamoto-u.ac.jp/medical/about/history/"
+        },
+        {
+          "title": "嘉納, 治五郎, 1860-1938（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00026740"
+        },
+        {
+          "title": "嘉納治五郎｜近代日本人の肖像（国立国会図書館）",
+          "url": "https://www.ndl.go.jp/portrait/datas/253"
         }
       ]
     },
     {
       "id": "terada-torahiko",
       "name": "寺田寅彦",
-      "reading": "未確認",
+      "reading": "てらだ とらひこ",
       "nameAlt": "",
       "birthYear": "1878",
       "deathYear": "1935",
@@ -117,7 +144,9 @@
         "同じページによると、五高時代に物理教授の田丸卓郎と英語教授の夏目漱石に出会い、生涯親交を結びました。",
         "同じページは、漱石の『吾輩は猫である』や『三四郎』の登場人物のモデルと言われている、と記しています。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜卒業生〜（熊本大学五高記念館）",
@@ -126,16 +155,24 @@
         {
           "title": "五高の歴史 〜沿革〜（熊本大学五高記念館）",
           "url": "https://www.goko.kumamoto-u.ac.jp/history/"
+        },
+        {
+          "title": "寺田, 寅彦, 1878-1935（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00083550"
+        },
+        {
+          "title": "寺田寅彦｜近代日本人の肖像（国立国会図書館）",
+          "url": "https://www.ndl.go.jp/portrait/datas/6078"
         }
       ]
     },
     {
       "id": "tamaru-takuro",
       "name": "田丸卓郎",
-      "reading": "未確認",
+      "reading": "たまる たくろう",
       "nameAlt": "",
       "birthYear": "1872",
-      "deathYear": "未確認",
+      "deathYear": "1932",
       "role": "第五高等学校 物理教授",
       "period": "1896年（明治29年）～1899年（明治32年）",
       "predecessorSchool": "第五高等学校",
@@ -145,7 +182,9 @@
         "同じページは、寺田寅彦が物理学の道に進むきっかけをつくった、と記しています。",
         "離任後は京都帝国大学を経て1900年に東京帝国大学へ赴任し、理論物理学・地震学・航空物理学の研究やローマ字普及にも関わった、と同じページは記しています。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜日本人教師〜（熊本大学五高記念館）",
@@ -154,16 +193,24 @@
         {
           "title": "五高の歴史 〜卒業生〜（熊本大学五高記念館）",
           "url": "https://www.goko.kumamoto-u.ac.jp/history/history9.php"
+        },
+        {
+          "title": "田丸, 卓郎, 1872-1932（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00080918"
+        },
+        {
+          "title": "田丸卓郎（盛岡市公式）",
+          "url": "https://www.city.morioka.iwate.jp/kanko_sports_bunka/rkeishi_bunkazai/senjin/1024995/1025000/1025093.html"
         }
       ]
     },
     {
       "id": "akizuki-tanenaga",
       "name": "秋月胤永",
-      "reading": "未確認",
+      "reading": "あきづき かずひさ",
       "nameAlt": "",
       "birthYear": "1824",
-      "deathYear": "未確認",
+      "deathYear": "1900",
       "role": "第五高等学校 倫理・国語・漢文教授",
       "period": "1890年（明治23年）～1895年（明治28年）",
       "predecessorSchool": "第五高等学校",
@@ -173,21 +220,27 @@
         "同じページは、五高の精神の基礎となる「剛毅木訥近仁」（論語の句）を教え、校友会「龍南会」の名付け親でもある、と記しています。",
         "同じページによると、ハーンは秋月を「先生は慈父のようである」と言い、敬愛していました。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜教師〜（熊本大学五高記念館）",
           "url": "https://www.goko.kumamoto-u.ac.jp/history/history6.php"
+        },
+        {
+          "title": "秋月, 韋軒, 1824-1900（Web NDL Authorities。本名・諱に秋月胤永）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00755043"
         }
       ]
     },
     {
       "id": "kuromoto-utsu",
       "name": "黒本植",
-      "reading": "未確認",
+      "reading": "くろもと うえ",
       "nameAlt": "",
-      "birthYear": "未確認",
-      "deathYear": "未確認",
+      "birthYear": "1858",
+      "deathYear": "1936",
       "role": "第五高等学校 漢文教授",
       "period": "1893年（明治26年）～1899年（明治32年）",
       "predecessorSchool": "第五高等学校",
@@ -197,21 +250,31 @@
         "同じページによると、もともと卒業記念樹の標木だったものが1927年12月に石碑となりました。黒本が記した『習学寮十二境記』から、武夫原の名前が生まれたといわれています。",
         "碑には「栽ゑておくかたみの小松色そへよ学びの園の文の林に」の和歌が漢字で刻まれています（同じ公式ページ）。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "大学の歴史散策（熊本大学）",
           "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "黒本稼堂（金沢市立玉川図書館 稼堂文庫案内）",
+          "url": "https://www2.lib.kanazawa.ishikawa.jp/kinsei/kadouten.pdf"
+        },
+        {
+          "title": "黒本稼堂（コトバンク／デジタル版 日本人名大辞典+Plus）",
+          "url": "https://kotobank.jp/word/%E9%BB%92%E6%9C%AC%E7%A8%BC%E5%A0%82-1072969"
         }
       ]
     },
     {
       "id": "yamaguchi-hanroku",
       "name": "山口半六",
-      "reading": "未確認",
+      "reading": "やまぐち はんろく",
       "nameAlt": "",
-      "birthYear": "未確認",
-      "deathYear": "未確認",
+      "birthYear": "1858",
+      "deathYear": "1900",
       "role": "文部省技師（第五高等中学校本館・化学実験場などの設計）",
       "period": "1888年着工、1889年竣工の五高本館・化学実験場などの設計者の一人",
       "predecessorSchool": "第五高等中学校（建築物の設計。教員ではない）",
@@ -221,7 +284,10 @@
         "同じページによると、1888年に文部省の直轄工事として着工し、1889年に教室本館、化学実験場などが竣工しました。",
         "文化遺産オンラインと大学公式「大学の歴史散策」でも、旧第五高等中学校の本館と化学実験場の設計者として、山口半六と久留正道が挙げられています。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan", "kagaku-jikkenjo"],
+      "relatedBuildingIds": [
+        "goko-kinenkan",
+        "kagaku-jikkenjo"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜建築〜（熊本大学五高記念館）",
@@ -234,16 +300,20 @@
         {
           "title": "大学の歴史散策（熊本大学）",
           "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "山口, 半六, 1858-1900（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00490651"
         }
       ]
     },
     {
       "id": "kuru-masamichi",
       "name": "久留正道",
-      "reading": "未確認",
+      "reading": "くる まさみち",
       "nameAlt": "",
-      "birthYear": "未確認",
-      "deathYear": "未確認",
+      "birthYear": "1855",
+      "deathYear": "1914",
       "role": "文部省技師（第五高等中学校本館・化学実験場などの設計）",
       "period": "1888年着工、1889年竣工の五高本館・化学実験場などの設計者の一人",
       "predecessorSchool": "第五高等中学校（建築物の設計。教員ではない）",
@@ -253,7 +323,10 @@
         "本館はれんが造・二階建てで、1889年に化学実験場などと竣工しました（同じページ）。",
         "文化遺産オンラインの文化財説明でも、本館と化学実験場の設計者として名があります。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan", "kagaku-jikkenjo"],
+      "relatedBuildingIds": [
+        "goko-kinenkan",
+        "kagaku-jikkenjo"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜建築〜（熊本大学五高記念館）",
@@ -262,6 +335,10 @@
         {
           "title": "旧第五高等中学校 化学実験場（文化遺産オンライン）",
           "url": "https://online.bunka.go.jp/heritages/detail/124567"
+        },
+        {
+          "title": "建築家の記録・久留正道（国立国会図書館 国際子ども図書館）",
+          "url": "https://www.kodomo.go.jp/about/building/history/architect"
         }
       ]
     },
@@ -281,7 +358,9 @@
         "工学部公式の沿革写真年表は、1922年10月に本館（北校舎）が火災で焼失し、1925年8月に鉄筋コンクリート造の本館を再建して引き渡したと記しています。竣工年の書き方は資料によって異なり、文化遺産オンラインは1924年竣工です。",
         "いまは大学の本部（事務局）として使われています（大学の歴史散策）。"
       ],
-      "relatedBuildingIds": ["honbu"],
+      "relatedBuildingIds": [
+        "honbu"
+      ],
       "sources": [
         {
           "title": "熊本大学本部（旧熊本高等工業学校本館）（文化遺産オンライン）",
@@ -313,7 +392,9 @@
         "現在の本部建物は1922年の火災後に再建されたもので、初代校長が執務した木造本館そのものではありません。結び付きは、この学校の初代校長という制度上の関係です。",
         "同じ沿革によると、1949年に熊本工業専門学校（旧高等工業）が熊本大学工学部に包括されました。"
       ],
-      "relatedBuildingIds": ["honbu"],
+      "relatedBuildingIds": [
+        "honbu"
+      ],
       "sources": [
         {
           "title": "工学部歴史資料館（明治～昭和編）（熊本大学工学部）",
@@ -337,7 +418,9 @@
         "工学部公式の沿革によると、1897年に第五高等学校に工学部（土木学科・機械学科）が創設された際、中川校長が工学部設置を建議しました。当時、高等学校で工学部が設けられたのは三高と五高のみ、と記されています。",
         "1906年にこの工学部が独立して熊本高等工業学校となりました（同じ公式の沿革）。"
       ],
-      "relatedBuildingIds": ["goko-kinenkan"],
+      "relatedBuildingIds": [
+        "goko-kinenkan"
+      ],
       "sources": [
         {
           "title": "五高の歴史 〜沿革〜（熊本大学五高記念館）",
@@ -365,7 +448,9 @@
         "文化遺産オンラインによると、山崎記念館は熊本医科大学長兼教授・山崎正董博士を記念した建物で、武田五一の設計、1931年竣工です。1998年9月2日に登録有形文化財になりました。",
         "熊本県立図書館によると、1872年高知県生まれ、1950年に逝去しました。著書に『肥後医育史』（1929年）と『横井小楠伝』（1942年）があります。"
       ],
-      "relatedBuildingIds": ["yamazaki-kinenkan"],
+      "relatedBuildingIds": [
+        "yamazaki-kinenkan"
+      ],
       "sources": [
         {
           "title": "山崎正董先生 顔面像（デスマスク）贈呈式を挙行しました（熊本大学）",
@@ -396,10 +481,10 @@
     {
       "id": "takeda-goichi",
       "name": "武田五一",
-      "reading": "未確認",
+      "reading": "たけだ ごいち",
       "nameAlt": "",
-      "birthYear": "未確認",
-      "deathYear": "未確認",
+      "birthYear": "1872",
+      "deathYear": "1938",
       "role": "建築家（山崎記念館の設計）",
       "period": "1931年（昭和6年）竣工の旧熊本医科大学図書館を設計",
       "predecessorSchool": "熊本医科大学（建築物の設計。教員かどうかは未確認）",
@@ -409,7 +494,9 @@
         "大学公式「大学の歴史散策」は、1931年建設で、2006年に曳家で48メートル移動したと記しています。",
         "登録有形文化財としての登録は1998年9月2日です（文化遺産オンライン）。"
       ],
-      "relatedBuildingIds": ["yamazaki-kinenkan"],
+      "relatedBuildingIds": [
+        "yamazaki-kinenkan"
+      ],
       "sources": [
         {
           "title": "熊本大学医学部山崎記念館（旧熊本医科大学図書館）（文化遺産オンライン）",
@@ -418,16 +505,20 @@
         {
           "title": "大学の歴史散策（熊本大学）",
           "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "武田, 五一, 1872-1938（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00324469"
         }
       ]
     },
     {
       "id": "hosokawa-shigekata",
       "name": "細川重賢",
-      "reading": "未確認",
+      "reading": "ほそかわ しげかた",
       "nameAlt": "",
-      "birthYear": "未確認",
-      "deathYear": "未確認",
+      "birthYear": "1720",
+      "deathYear": "1785",
       "role": "肥後藩主（再春館・蕃滋園の開設）",
       "period": "宝暦6年（1756年）に医学寮「再春館」と薬園「蕃滋園」を開設（医学部・薬学部の公式沿革）",
       "predecessorSchool": "再春館（医学）と蕃滋園（薬園）。熊本大学医学部・薬学部の公式沿革が起点とする学校と薬園です。教職員ではありません。",
@@ -437,7 +528,9 @@
         "薬学部公式沿革と薬用植物園の歴史は、同じ年に細川重賢が薬園「蕃滋園」を開設したとしています。",
         "薬用植物園の公式ページによると、園内には蕃滋園に由来する薬木として、モクゲンジ、テンダイウヤク、サンシュユ、サンザシ、ニンジンボクが見られます。大学の歴史散策では、1890年の蕃滋園廃園後に薬木薬草150余種が五高へ寄付され、のちに薬学部の薬草園へ移植されたと記しています。"
       ],
-      "relatedBuildingIds": ["yakuyo-shokubutsuen"],
+      "relatedBuildingIds": [
+        "yakuyo-shokubutsuen"
+      ],
       "sources": [
         {
           "title": "沿革（熊本大学医学部）",
@@ -454,6 +547,10 @@
         {
           "title": "大学の歴史散策（熊本大学）",
           "url": "https://www.kumamoto-u.ac.jp/daigakujouhou/gaiyo/rekishimap"
+        },
+        {
+          "title": "細川, 重賢, 1720-1785（Web NDL Authorities）",
+          "url": "https://id.ndl.go.jp/auth/ndlna/00291350"
         }
       ]
     },
@@ -494,8 +591,8 @@
       "name": "マンスフェルト",
       "reading": "未確認",
       "nameAlt": "",
-      "birthYear": "未確認",
-      "deathYear": "未確認",
+      "birthYear": "1832",
+      "deathYear": "1912",
       "role": "古城医学校の教師（オランダ海軍の軍医、と大学プレスの用語解説）",
       "period": "大学公式は、古城医学校の教師であったことまでを明記しています。着任・離熊の日付は大学プレスの本文にはありません。熊本大学附属図書館医学系分館が回答したレファレンス協同データベース（出典は山崎正董『肥後醫育史』、1929年）によると、約定は明治4年4月28日（1871年6月15日）から明治7年4月28日までの3年で、実際は明治4年4月20日に着任し、離熊については同書に「明治7年7月帰国」と「6月17日出立」の記述があります。",
       "predecessorSchool": "古城医学校",
@@ -518,6 +615,10 @@
         {
           "title": "レファレンス協同データベース（熊本大学附属図書館医学系分館の回答、出典は『肥後醫育史』）",
           "url": "https://crd.ndl.go.jp/reference/entry/index.php?id=1000096106&page=ref_view"
+        },
+        {
+          "title": "マンスフェルト（コトバンク／日本大百科全書・デジタル版日本人名大辞典+Plus）",
+          "url": "https://kotobank.jp/word/%E3%81%BE%E3%82%93%E3%81%99%E3%81%B5%E3%81%88%E3%82%8B%E3%81%A8-3171851"
         }
       ]
     }
