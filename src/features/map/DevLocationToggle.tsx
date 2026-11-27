@@ -6,14 +6,51 @@ import { theme } from '@/theme/tokens';
 import { campuses } from './campuses';
 import type { DevLocationToggleProps, DevMapFix } from './devMapFix';
 import { campusBoundsCenter } from './georef';
+import { spots } from './spots';
 
 const MOCK_ACCURACY_METERS = 20;
 
 /**
- * 開発ビルドだけで出す、キャンパス外から地図を試すための位置。
+ * 開発ビルドだけで出す位置。地図と、半径約100mの押印を試す。
  * 本番バンドルでは metro がこのファイルを空実装に差し替える。
- * 座標はジオリファレンス範囲の確認用で、地点データではない。
+ * 建物の座標は spots.csv から取り、ここには写さない。
  */
+const BUILDING_LABELS: Record<string, string> = {
+  'goko-kinenkan': '五高',
+  'kagaku-jikkenjo': '化学',
+  akamon: '赤門',
+  honbu: '本部',
+  'kougaku-shiryokan': '資料館',
+  'yamazaki-kinenkan': '山崎',
+  'ooe-campus': '薬学',
+  'yakuyo-shokubutsuen': '植物園',
+};
+
+const BUILDING_ORDER = [
+  'goko-kinenkan',
+  'kagaku-jikkenjo',
+  'akamon',
+  'honbu',
+  'kougaku-shiryokan',
+  'yamazaki-kinenkan',
+  'ooe-campus',
+  'yakuyo-shokubutsuen',
+] as const;
+
+function buildingPreset(id: (typeof BUILDING_ORDER)[number]): DevMapFix | null {
+  const spot = spots.find((item) => item.id === id);
+  if (spot == null || spot.lat == null || spot.lon == null) {
+    return null;
+  }
+  return {
+    id: `spot-${id}`,
+    label: BUILDING_LABELS[id] ?? spot.name,
+    lat: spot.lat,
+    lon: spot.lon,
+    accuracyMeters: MOCK_ACCURACY_METERS,
+  };
+}
+
 const presets: readonly DevMapFix[] = [
   ...campuses.map((campus) => {
     const center = campusBoundsCenter(campus.id);
@@ -24,6 +61,10 @@ const presets: readonly DevMapFix[] = [
       lon: center.lon,
       accuracyMeters: MOCK_ACCURACY_METERS,
     };
+  }),
+  ...BUILDING_ORDER.flatMap((id) => {
+    const preset = buildingPreset(id);
+    return preset == null ? [] : [preset];
   }),
   {
     id: 'outside',
@@ -42,7 +83,7 @@ export function DevLocationToggle({ selectedId, onChange }: DevLocationTogglePro
 
   return (
     <View>
-      <Text style={styles.caption}>開発用の位置（公開ビルドには出ません）</Text>
+      <Text style={styles.caption}>開発用の位置。押印の範囲もこれで試す（公開ビルドには出ません）</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

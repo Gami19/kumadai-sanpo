@@ -1,14 +1,24 @@
+import { useIsFocused } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { NameSeal } from '@/components/NameSeal';
+import { BuildingStamp } from '@/components/stamp/BuildingStamp';
+import { frameForCampus } from '@/components/stamp/catalog';
+import { StampBlank } from '@/components/stamp/StampBlank';
 import { useUndoToast } from '@/components/UndoToast';
+import { campusIdForLabel } from '@/features/map/campuses';
+import { spots } from '@/features/map/spots';
+import { useBuildings } from '@/lib/content/useBuildings';
 import { haptics } from '@/lib/haptics';
 import type { FavoriteRecord, StampRecord } from '@/lib/notebook/parse';
 import { NotebookStorageError } from '@/lib/notebook/storage';
 import { useNotebook } from '@/lib/notebook/useNotebook';
+import { stampGate } from '@/lib/stamp/gate';
 import { theme } from '@/theme/tokens';
+
+import { blockNeedsRecover, blockedAccessibility, blockedButtonLabel } from './stampCopy';
+import { recoverStampLocation, useStampFix } from './useStampFix';
 
 function storageMessage(error: unknown): string {
   const reason = error instanceof NotebookStorageError ? error.reason : 'save';
@@ -23,11 +33,20 @@ type BarProps = {
 };
 
 export function BuildingActionBar({ buildingId, buildingName, onMap, onQuiz }: BarProps) {
+  const focused = useIsFocused();
   const notebook = useNotebook();
+  const buildings = useBuildings();
+  const fix = useStampFix(focused);
   const showToast = useUndoToast();
   const [celebrated, setCelebrated] = useState(0);
   const stamp = notebook.stamps.find((item) => item.buildingId === buildingId) ?? null;
   const favorite = notebook.favoriteBuildings.find((item) => item.id === buildingId) ?? null;
+  const building = buildings.find((item) => item.id === buildingId) ?? null;
+  const campusId = building == null ? null : campusIdForLabel(building.campus);
+  const spot = spots.find((item) => item.id === buildingId);
+  const point = spot != null && spot.lat != null && spot.lon != null ? { lat: spot.lat, lon: spot.lon } : null;
+  const gate = stampGate(fix.state, point);
+  const blocked = stamp == null && !gate.ok;
 
   const fail = (error: unknown) => {
     showToast(storageMessage(error));
@@ -48,21 +67,34 @@ export function BuildingActionBar({ buildingId, buildingName, onMap, onQuiz }: B
     <View style={styles.stack}>
       <View style={styles.row}>
         <ActionButton
-          tone="stamp"
+          tone={stamp == null && gate.ok ? 'stamp' : 'quiet'}
           selected={stamp != null}
-          label={stamp != null ? '消す' : 'スタンプ'}
+          disabled={stamp == null && !gate.ok && !blockNeedsRecover(gate.block)}
+          label={stamp != null ? '消す' : blocked ? blockedButtonLabel(gate.block) : 'スタンプ'}
           accessibilityLabel={
             stamp != null
               ? `${buildingName}の訪問スタンプを消す`
-              : `${buildingName}に訪問スタンプを付ける`
+              : gate.ok
+                ? `${buildingName}に訪問スタンプを付ける`
+                : blockedAccessibility(buildingName, gate.block)
           }
           glyph={
-            <NameSeal
-              key={celebrated}
-              name={buildingName}
-              size={32}
-              pop={stamp != null && celebrated > 0}
-            />
+            stamp != null && campusId != null ? (
+              <BuildingStamp
+                key={celebrated}
+                buildingId={buildingId}
+                campusId={campusId}
+                size={32}
+                pop={celebrated > 0}
+              />
+            ) : campusId != null ? (
+              <StampBlank
+                frame={frameForCampus(campusId)}
+                size={28}
+                tone={gate.ok ? 'ready' : 'blocked'}
+                icon={!gate.ok && gate.block.kind !== 'pending' ? 'location.slash' : null}
+              />
+            ) : null
           }
           onPress={() => {
             if (!guard()) {
@@ -74,6 +106,13 @@ export function BuildingActionBar({ buildingId, buildingName, onMap, onQuiz }: B
               void notebook.removeStamp(buildingId).then(() => {
                 showToast('スタンプを消しました', () => notebook.restoreStamp(saved).catch(fail));
               }, fail);
+              return;
+            }
+            if (!gate.ok) {
+              if (blockNeedsRecover(gate.block)) {
+                haptics.select();
+                recoverStampLocation(gate.block, fix.retry);
+              }
               return;
             }
             haptics.stamp();
@@ -210,6 +249,9 @@ function buttonColor(tone: 'stamp' | 'quiet', selected: boolean): string {
   if (tone === 'stamp' && !selected) {
     return theme.color.white;
   }
+  if (tone === 'stamp' && selected) {
+    return theme.color.vermilion;
+  }
   if (tone === 'quiet' && !selected) {
     return theme.color.ink;
   }
@@ -224,6 +266,7 @@ function ActionButton({
   icon,
   glyph,
   selected = false,
+  disabled = false,
 }: {
   label: string;
   accessibilityLabel: string;
@@ -232,6 +275,7 @@ function ActionButton({
   icon?: IconName;
   glyph?: ReactNode;
   selected?: boolean;
+  disabled?: boolean;
 }) {
   const filled = tone === 'stamp' && !selected;
   const color = buttonColor(tone, selected);
@@ -239,11 +283,12 @@ function ActionButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: filled ? theme.color.brick : theme.color.white },
+        { backgroundColor: filled ? theme.color.vermilion : theme.color.white },
         pressed && styles.pressed,
       ]}
     >

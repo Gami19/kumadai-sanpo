@@ -12,6 +12,7 @@ import { DevLocationToggle } from '@/features/map/DevLocationToggle';
 import { LocationButton, locationButtonModel } from '@/features/map/LocationButton';
 import { SpotPreviewSheet } from '@/features/map/SpotPreviewSheet';
 import { campuses, isCampusId, type CampusId } from '@/features/map/campuses';
+import { getDevLocation, setDevLocation } from '@/features/map/devLocation';
 import type { DevMapFix } from '@/features/map/devMapFix';
 import { lonLatToIllustrationPx, illustrationSize } from '@/features/map/georef';
 import { readLastCampus, writeLastCampus } from '@/features/map/lastCampus';
@@ -47,7 +48,11 @@ export default function MapScreen() {
   );
   const [shown, setShown] = useState(shownAll);
   const [selectedId, setSelectedId] = useState<string | null>(spotParam);
-  const [devFix, setDevFix] = useState<DevMapFix | null>(null);
+  const [devFix, setDevFixState] = useState<DevMapFix | null>(() => getDevLocation());
+  const setDevFix = (fix: DevMapFix | null) => {
+    setDevFixState(fix);
+    setDevLocation(fix);
+  };
   const [following, setFollowing] = useState(false);
   const [chromeHeight, setChromeHeight] = useState<number>(theme.hit);
   const [focusRequest, setFocusRequest] = useState<{
