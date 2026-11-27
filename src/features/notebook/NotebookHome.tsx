@@ -1,24 +1,16 @@
 import { router, useIsFocused } from 'expo-router';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import Animated, {
-  Easing,
-  ReduceMotion,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EstimatedChip } from '@/components/EstimatedChip';
 import { Icon } from '@/components/Icon';
 import { MapThumb } from '@/components/MapThumb';
 import { NameSeal } from '@/components/NameSeal';
-import { MasteryStamp } from '@/components/stamp/MasteryStamp';
+import { BuildingStamp } from '@/components/stamp/BuildingStamp';
 import { useUndoToast } from '@/components/UndoToast';
 import { mapTargetForBuilding } from '@/features/buildings/mapTarget';
-import { campusIdForLabel, campuses, type CampusId } from '@/features/map/campuses';
+import { campusIdForLabel, type CampusId } from '@/features/map/campuses';
 import { spots } from '@/features/map/spots';
 import type { Building } from '@/lib/content/buildings';
 import { useBuildings } from '@/lib/content/useBuildings';
@@ -27,28 +19,22 @@ import { haptics } from '@/lib/haptics';
 import { readCompletionSeen, writeCompletionSeen } from '@/lib/notebook/completion';
 import { readDistrictSeen, writeDistrictSeen } from '@/lib/notebook/districtSeen';
 import { CAMPUS_IDS, isCampusComplete } from '@/lib/notebook/districts';
-import type { FavoriteRecord, StampRecord } from '@/lib/notebook/parse';
+import type { FavoriteRecord } from '@/lib/notebook/parse';
 import { NotebookStorageError } from '@/lib/notebook/storage';
 import { useNotebook } from '@/lib/notebook/useNotebook';
 import { stampGate, type StampGate } from '@/lib/stamp/gate';
 import { buildingsInCampusOrder } from '@/lib/quiz/order';
 import { theme } from '@/theme/tokens';
 
-import { StampControl } from './StampControl';
+import { StampPreviewModal } from './StampPreviewModal';
+import { howToGetLabel, STAMP_HINT } from './stampCopy';
 import { recoverStampLocation, useStampFix } from './useStampFix';
 
 /** 円周の文字が読める大きさ。写真の中央に押す。 */
 const SEAL = 104;
-const DISTRICT_SEAL = 120;
-const FULL_SEAL = 144;
 const RING = 104;
 const RING_DOT = theme.space.sm;
 const RING_RADIUS = 40;
-/** 大きな印が見える時間。着地のあと、すぐに消す。 */
-const CELEBRATION_HOLD_MS = 720;
-const CELEBRATION_FADE_MS = 180;
-
-const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
 function byRecent(a: FavoriteRecord, b: FavoriteRecord): number {
   return Date.parse(b.savedAt) - Date.parse(a.savedAt);
@@ -59,7 +45,7 @@ function storageMessage(error: unknown): string {
   return reason === 'load' ? '記録を読み込めませんでした' : '保存できませんでした';
 }
 
-function openBuilding(building: Building) {
+function openMap(building: Building) {
   haptics.select();
   const spot = spots.find((item) => item.id === building.id);
   const target = mapTargetForBuilding(building, spot);
@@ -73,10 +59,14 @@ function openBuilding(building: Building) {
   router.push({ pathname: '/building/[id]', params: { id: building.id } });
 }
 
+function openDetail(building: Building) {
+  haptics.select();
+  router.push({ pathname: '/building/[id]', params: { id: building.id } });
+}
+
 export function NotebookHome() {
   const insets = useSafeAreaInsets();
   const focused = useIsFocused();
-  const reduced = useReducedMotion();
   const { width } = useWindowDimensions();
   const fix = useStampFix(focused);
   const buildings = useBuildings();
@@ -85,9 +75,10 @@ export function NotebookHome() {
   const showToast = useUndoToast();
   const [popId, setPopId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [previewVisible, setPreviewVisible] = useState(false);
   const [seen, setSeen] = useState<boolean | null>(null);
   const [districtSeen, setDistrictSeen] = useState<ReadonlySet<CampusId> | null>(null);
-  const [celebrationDone, setCelebrationDone] = useState(false);
   const wroteSeen = useRef(false);
   const wroteDistrictKey = useRef('');
   const ordered = buildingsInCampusOrder(buildings);
@@ -102,6 +93,26 @@ export function NotebookHome() {
     .filter((record) => people.some((person) => person.id === record.id))
     .slice()
     .sort(byRecent);
+  const previewBuilding = previewId != null ? ordered.find((item) => item.id === previewId) ?? null : null;
+  const previewCampusId =
+    previewBuilding != null ? campusIdForLabel(previewBuilding.campus) : null;
+  const previewStamp =
+    previewBuilding != null
+      ? (notebook.stamps.find((item) => item.buildingId === previewBuilding.id) ?? null)
+      : null;
+
+  const openPreview = (id: string) => {
+    haptics.select();
+    setPreviewId(id);
+    setPreviewVisible(true);
+  };
+
+  const closePreview = () => {
+    setPreviewVisible(false);
+    setTimeout(() => {
+      setPreviewId(null);
+    }, 200);
+  };
 
   useEffect(() => {
     let live = true;
@@ -120,19 +131,10 @@ export function NotebookHome() {
     };
   }, []);
 
+  // 区画／全制覇の印は出さないが、seen キーは互換のため静かに更新する。
   const stampedKey = ordered.map((building) => (stampedIds.has(building.id) ? building.id : '')).join(',');
-  const pendingDistrict =
-    districtSeen == null
-      ? null
-      : (CAMPUS_IDS.find(
-          (id) => !districtSeen.has(id) && isCampusComplete(ordered, id, stampedIds),
-        ) ?? null);
-  const showDistrict = pendingDistrict != null && !reduced;
-  const celebrating = !showDistrict && complete && seen === false && !reduced && !celebrationDone;
-  const doneCampuses = CAMPUS_IDS.filter((id) => isCampusComplete(ordered, id, stampedIds));
-
   useEffect(() => {
-    if (!reduced || districtSeen == null) {
+    if (districtSeen == null) {
       return;
     }
     const ids = new Set(stampedKey.length === 0 ? [] : stampedKey.split(','));
@@ -144,32 +146,19 @@ export function NotebookHome() {
       return;
     }
     wroteDistrictKey.current = key;
-    void writeDistrictSeen([...new Set<CampusId>([...districtSeen, ...missing])]);
-  }, [districtSeen, ordered, reduced, stampedKey]);
+    const next = new Set<CampusId>([...districtSeen, ...missing]);
+    setDistrictSeen(next);
+    void writeDistrictSeen([...next]);
+  }, [districtSeen, ordered, stampedKey]);
 
   useEffect(() => {
-    if (!complete || seen !== false || !reduced || wroteSeen.current) {
+    if (!complete || seen !== false || wroteSeen.current) {
       return;
     }
     wroteSeen.current = true;
-    void writeCompletionSeen();
-  }, [complete, reduced, seen]);
-
-  const finishCelebration = useCallback(() => {
-    wroteSeen.current = true;
-    setCelebrationDone(true);
     setSeen(true);
     void writeCompletionSeen();
-  }, []);
-
-  const finishDistrict = useCallback((id: CampusId) => {
-    setDistrictSeen((current) => {
-      const next = new Set<CampusId>(current ?? []);
-      next.add(id);
-      void writeDistrictSeen([...next]);
-      return next;
-    });
-  }, []);
+  }, [complete, seen]);
 
   const gateFor = (building: Building): StampGate => {
     const spot = spots.find((item) => item.id === building.id);
@@ -186,35 +175,26 @@ export function NotebookHome() {
       return;
     }
     const existing = notebook.stamps.find((item) => item.buildingId === building.id);
-    if (existing == null) {
-      if (!gateFor(building).ok) {
-        return;
-      }
-      haptics.stamp();
-      setPopId(building.id);
-      setPendingId(building.id);
-      void notebook.stampBuilding(building.id).then(() => {
-        setPendingId((current) => (current === building.id ? null : current));
-        showToast('スタンプを付けました', () => {
-          setPopId((current) => (current === building.id ? null : current));
-          return notebook.removeStamp(building.id).catch(fail);
-        });
-      }, (error: unknown) => {
-        setPendingId((current) => (current === building.id ? null : current));
-        setPopId((current) => (current === building.id ? null : current));
-        fail(error);
-      });
+    if (existing != null) {
       return;
     }
-    const saved: StampRecord = existing;
-    haptics.remove();
-    setPopId((current) => (current === building.id ? null : current));
-    void notebook.removeStamp(building.id).then(() => {
-      showToast('スタンプを消しました', () => {
-        setPopId(building.id);
-        return notebook.restoreStamp(saved).catch(fail);
+    if (!gateFor(building).ok) {
+      return;
+    }
+    haptics.stamp();
+    setPopId(building.id);
+    setPendingId(building.id);
+    void notebook.stampBuilding(building.id).then(() => {
+      setPendingId((current) => (current === building.id ? null : current));
+      showToast('スタンプを付けました', () => {
+        setPopId((current) => (current === building.id ? null : current));
+        return notebook.removeStamp(building.id).catch(fail);
       });
-    }, fail);
+    }, (error: unknown) => {
+      setPendingId((current) => (current === building.id ? null : current));
+      setPopId((current) => (current === building.id ? null : current));
+      fail(error);
+    });
   };
 
   const favorite = (building: Building) => {
@@ -238,130 +218,122 @@ export function NotebookHome() {
   };
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={complete ? styles.complete : undefined}
-      contentContainerStyle={[
-        styles.content,
-        complete ? styles.complete : null,
-        { paddingBottom: insets.bottom + theme.space.xl },
-      ]}
-    >
-      {notebook.loadError ? <Text style={styles.warning}>記録を読み込めませんでした</Text> : null}
-      {notebook.ready && !notebook.loadError ? (
-        <View>
-          <ProgressRing
-            marks={ordered.map((building) => stampedIds.has(building.id))}
-          />
-          <View style={styles.grid}>
-            {ordered.map((building) => {
-              const on = stampedIds.has(building.id);
-              const spot = spots.find((item) => item.id === building.id);
-              const onMap = mapTargetForBuilding(building, spot) != null;
-              const campusId = campusIdForLabel(building.campus);
-              return (
-                <StampFrame
-                  key={building.id}
-                  building={building}
-                  campusId={campusId}
-                  width={tile}
-                  stamped={on}
-                  favorite={notebook.favoriteBuildings.some((item) => item.id === building.id)}
-                  pop={popId === building.id && on}
-                  gate={gateFor(building)}
-                  onMap={onMap}
-                  onOpen={() => {
-                    openBuilding(building);
-                  }}
-                  onStamp={() => {
-                    stamp(building);
-                  }}
-                  onRecover={() => {
-                    const gate = gateFor(building);
-                    if (!gate.ok) {
-                      haptics.select();
-                      recoverStampLocation(gate.block, fix.retry);
-                    }
-                  }}
-                  onFavorite={() => {
-                    favorite(building);
-                  }}
-                />
-              );
-            })}
-          </View>
-          {doneCampuses.length > 0 || complete ? (
-            <View style={styles.mastery}>
-              {doneCampuses.map((id) => {
-                const label = campuses.find((campus) => campus.id === id)?.label ?? '';
+    <>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        style={complete ? styles.complete : undefined}
+        contentContainerStyle={[
+          styles.content,
+          complete ? styles.complete : null,
+          { paddingBottom: insets.bottom + theme.space.xl },
+        ]}
+      >
+        {notebook.loadError ? <Text style={styles.warning}>記録を読み込めませんでした</Text> : null}
+        {notebook.ready && !notebook.loadError ? (
+          <View>
+            <ProgressRing
+              marks={ordered.map((building) => stampedIds.has(building.id))}
+            />
+            <Text style={styles.hint} accessibilityRole="text">
+              {STAMP_HINT}
+            </Text>
+            <View style={styles.grid}>
+              {ordered.map((building) => {
+                const on = stampedIds.has(building.id);
+                const campusId = campusIdForLabel(building.campus);
+                const gate = gateFor(building);
                 return (
-                  <View key={id} accessible accessibilityLabel={`${label}を制覇`}>
-                    <MasteryStamp campusId={id} size={DISTRICT_SEAL} />
-                  </View>
-                );
-              })}
-              {complete ? (
-                <View accessible accessibilityLabel={`${ordered.length}件すべてにスタンプが付きました`}>
-                  <MasteryStamp size={FULL_SEAL} />
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-          {favoritePeople.length > 0 ? (
-            <View style={styles.people}>
-              <Text style={styles.section}>人物</Text>
-              {favoritePeople.map((record, index) => {
-                const person = people.find((item) => item.id === record.id);
-                if (person == null) {
-                  return null;
-                }
-                return (
-                  <Pressable
-                    key={person.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={person.name}
-                    onPress={() => {
-                      haptics.select();
-                      router.push({ pathname: '/people/[id]', params: { id: person.id } });
+                  <StampFrame
+                    key={building.id}
+                    building={building}
+                    campusId={campusId}
+                    width={tile}
+                    stamped={on}
+                    favorite={notebook.favoriteBuildings.some((item) => item.id === building.id)}
+                    pop={popId === building.id && on}
+                    gate={gate}
+                    onOpenPreview={() => {
+                      openPreview(building.id);
                     }}
-                    style={({ pressed }) => [
-                      styles.personRow,
-                      index < favoritePeople.length - 1 ? styles.personLine : null,
-                      pressed && styles.rowPressed,
-                    ]}
-                  >
-                    <NameSeal name={person.name} />
-                    <Text style={styles.personName} numberOfLines={1}>
-                      {person.name}
-                    </Text>
-                    <Icon name="chevron.right" size={18} color={theme.color.inkMuted} />
-                  </Pressable>
+                    onStamp={() => {
+                      stamp(building);
+                    }}
+                    onFavorite={() => {
+                      favorite(building);
+                    }}
+                    onOpenMap={() => {
+                      openMap(building);
+                    }}
+                  />
                 );
               })}
             </View>
-          ) : null}
-          {showDistrict && pendingDistrict != null ? (
-            <LandingOverlay
-              key={pendingDistrict}
-              label={`${campuses.find((campus) => campus.id === pendingDistrict)?.label ?? ''}の建物がそろいました`}
-              onDone={() => {
-                finishDistrict(pendingDistrict);
-              }}
-            >
-              <MasteryStamp campusId={pendingDistrict} size={FULL_SEAL} pop />
-            </LandingOverlay>
-          ) : null}
-          {celebrating && complete ? (
-            <LandingOverlay
-              label={`${ordered.length}件すべてにスタンプが付きました`}
-              onDone={finishCelebration}
-            >
-              <MasteryStamp size={theme.space.xl * 4} pop />
-            </LandingOverlay>
-          ) : null}
-        </View>
+            {favoritePeople.length > 0 ? (
+              <View style={styles.people}>
+                <Text style={styles.section}>人物</Text>
+                {favoritePeople.map((record, index) => {
+                  const person = people.find((item) => item.id === record.id);
+                  if (person == null) {
+                    return null;
+                  }
+                  return (
+                    <Pressable
+                      key={person.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={person.name}
+                      onPress={() => {
+                        haptics.select();
+                        router.push({ pathname: '/people/[id]', params: { id: person.id } });
+                      }}
+                      style={({ pressed }) => [
+                        styles.personRow,
+                        index < favoritePeople.length - 1 ? styles.personLine : null,
+                        pressed && styles.rowPressed,
+                      ]}
+                    >
+                      <NameSeal name={person.name} />
+                      <Text style={styles.personName} numberOfLines={1}>
+                        {person.name}
+                      </Text>
+                      <Icon name="chevron.right" size={18} color={theme.color.inkMuted} />
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+      </ScrollView>
+      {previewBuilding != null && previewCampusId != null ? (
+        <StampPreviewModal
+          building={previewBuilding}
+          campusId={previewCampusId}
+          stampedAt={previewStamp?.stampedAt ?? null}
+          gate={gateFor(previewBuilding)}
+          visible={previewVisible}
+          onClose={closePreview}
+          onOpenDetail={() => {
+            closePreview();
+            openDetail(previewBuilding);
+          }}
+          onOpenMap={() => {
+            closePreview();
+            openMap(previewBuilding);
+          }}
+          onStamp={() => {
+            closePreview();
+            stamp(previewBuilding);
+          }}
+          onRecover={() => {
+            const gate = gateFor(previewBuilding);
+            if (!gate.ok) {
+              haptics.select();
+              recoverStampLocation(gate.block, fix.retry);
+            }
+          }}
+        />
       ) : null}
-    </ScrollView>
+    </>
   );
 }
 
@@ -406,49 +378,6 @@ function ProgressRing({ marks }: { marks: readonly boolean[] }) {
   );
 }
 
-function LandingOverlay({
-  label,
-  onDone,
-  children,
-}: {
-  label: string;
-  onDone: () => void;
-  children: ReactNode;
-}) {
-  const opacity = useSharedValue(1);
-  const animated = useAnimatedStyle(() => ({ opacity: opacity.get() }));
-
-  useEffect(() => {
-    const hold = setTimeout(() => {
-      opacity.set(
-        withTiming(0, {
-          duration: CELEBRATION_FADE_MS,
-          easing: EASE_OUT,
-          reduceMotion: ReduceMotion.System,
-        }),
-      );
-    }, CELEBRATION_HOLD_MS);
-    const done = setTimeout(onDone, CELEBRATION_HOLD_MS + CELEBRATION_FADE_MS);
-    return () => {
-      clearTimeout(hold);
-      clearTimeout(done);
-    };
-  }, [onDone, opacity]);
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      accessibilityLiveRegion="polite"
-      accessibilityLabel={label}
-      style={[styles.celebration, animated]}
-    >
-      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        {children}
-      </View>
-    </Animated.View>
-  );
-}
-
 function StampFrame({
   building,
   campusId,
@@ -457,11 +386,10 @@ function StampFrame({
   favorite,
   pop,
   gate,
-  onMap,
-  onOpen,
+  onOpenPreview,
   onStamp,
-  onRecover,
   onFavorite,
+  onOpenMap,
 }: {
   building: Building;
   campusId: CampusId | null;
@@ -470,19 +398,26 @@ function StampFrame({
   favorite: boolean;
   pop: boolean;
   gate: StampGate;
-  onMap: boolean;
-  onOpen: () => void;
+  onOpenPreview: () => void;
   onStamp: () => void;
-  onRecover: () => void;
   onFavorite: () => void;
+  onOpenMap: () => void;
 }) {
-  const place = onMap ? `${building.name}を地図で見る` : `${building.name}の詳細`;
+  const ready = !stamped && gate.ok;
+  const blocked = !stamped && !gate.ok ? gate.block : null;
+  const how = howToGetLabel(blocked, ready);
+  const label = stamped
+    ? `${building.name}のスタンプを見る`
+    : ready
+      ? `${building.name}。${how}`
+      : `${building.name}。まだ取れていません。${how}`;
+
   return (
     <View style={{ width }}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={building.positionEstimated ? `${place}。位置は推定` : place}
-        onPress={onOpen}
+        accessibilityLabel={building.positionEstimated ? `${label}。位置は推定` : label}
+        onPress={onOpenPreview}
         pressRetentionOffset={theme.space.md}
         style={({ pressed }) => [pressed && styles.tilePressed]}
       >
@@ -490,17 +425,35 @@ function StampFrame({
           <MapThumb
             id={building.id}
             sepia={!stamped}
-            style={[styles.thumb, stamped && styles.thumbStamped]}
+            style={[styles.thumb, stamped ? styles.thumbStamped : styles.thumbLocked]}
           />
           {stamped ? <View pointerEvents="none" style={styles.thumbWash} /> : null}
-          {stamped ? null : (
-            <View pointerEvents="none" style={styles.cue}>
-              <Icon name="mappin" size={16} color={theme.color.ink} />
+          {!stamped ? <View pointerEvents="none" style={styles.lockDim} /> : null}
+          {!stamped ? (
+            <View pointerEvents="none" style={styles.lockBadge}>
+              <Icon name={ready ? 'location.fill' : 'lock'} size={18} color={theme.color.ink} />
             </View>
-          )}
+          ) : null}
           {building.positionEstimated ? (
             <View pointerEvents="none" style={styles.estimated}>
               <EstimatedChip interactive={false} />
+            </View>
+          ) : null}
+          {stamped && campusId != null ? (
+            <View pointerEvents="none" style={styles.sealCenter}>
+              <BuildingStamp
+                buildingId={building.id}
+                campusId={campusId}
+                size={SEAL}
+                pop={pop}
+              />
+            </View>
+          ) : null}
+          {!stamped ? (
+            <View pointerEvents="none" style={styles.howOverlay}>
+              <Text style={[styles.howText, ready ? styles.howReady : null]} numberOfLines={2}>
+                {how}
+              </Text>
             </View>
           ) : null}
         </View>
@@ -508,20 +461,24 @@ function StampFrame({
           {building.name}
         </Text>
       </Pressable>
-      {campusId != null ? (
-        <View style={[styles.sealHit, { top: (width - SEAL) / 2, left: (width - SEAL) / 2 }]}>
-          <StampControl
-            building={building}
-            campusId={campusId}
-            stamped={stamped}
-            pop={pop}
-            size={SEAL}
-            gate={gate}
-            onStamp={onStamp}
-            onRemove={onStamp}
-            onRecover={onRecover}
-          />
-        </View>
+      {!stamped ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            ready ? `${building.name}にスタンプを押す` : `${building.name}を地図で開く`
+          }
+          onPress={() => {
+            if (ready) {
+              onStamp();
+              return;
+            }
+            onOpenMap();
+          }}
+          style={({ pressed }) => [styles.cueLink, pressed && styles.sealPressed]}
+        >
+          <Icon name={ready ? 'checkmark' : 'map'} size={14} color={theme.color.leafDark} />
+          <Text style={styles.cueLinkText}>{ready ? '押す' : '地図で見る'}</Text>
+        </Pressable>
       ) : null}
       <Pressable
         accessibilityRole="button"
@@ -556,6 +513,12 @@ const styles = StyleSheet.create({
     color: theme.color.brick,
     fontSize: theme.font.caption,
   },
+  hint: {
+    color: theme.color.inkMuted,
+    fontSize: theme.font.caption,
+    textAlign: 'center',
+    marginTop: theme.space.sm,
+  },
   ring: {
     width: RING,
     height: RING,
@@ -588,7 +551,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.space.sm,
-    marginTop: theme.space.lg,
+    marginTop: theme.space.md,
   },
   frame: {
     borderRadius: theme.radius.md,
@@ -598,19 +561,23 @@ const styles = StyleSheet.create({
   thumb: {
     aspectRatio: 1,
   },
-  /** 押印済みはイラストを後ろに引き、印を主役にする。 */
   thumbStamped: {
     opacity: 0.42,
+  },
+  thumbLocked: {
+    opacity: 0.45,
   },
   thumbWash: {
     ...StyleSheet.absoluteFill,
     backgroundColor: theme.color.paper,
     opacity: 0.38,
   },
-  tilePressed: {
-    opacity: theme.opacity.pressed,
+  lockDim: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: theme.color.ink,
+    opacity: 0.28,
   },
-  cue: {
+  lockBadge: {
     position: 'absolute',
     top: theme.space.xs,
     left: theme.space.xs,
@@ -621,30 +588,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: theme.color.paper,
   },
+  howOverlay: {
+    position: 'absolute',
+    left: theme.space.xs,
+    right: theme.space.xs,
+    bottom: theme.space.xs,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.color.paper,
+    paddingHorizontal: theme.space.sm,
+    paddingVertical: theme.space.xs,
+  },
+  howText: {
+    color: theme.color.ink,
+    fontSize: theme.font.caption,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  howReady: {
+    color: theme.color.vermilion,
+  },
+  sealCenter: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tilePressed: {
+    opacity: theme.opacity.pressed,
+  },
   estimated: {
     position: 'absolute',
     left: theme.space.xs,
-    bottom: theme.space.xs,
-  },
-  sealHit: {
-    position: 'absolute',
-    zIndex: 1,
-    width: SEAL,
-    height: SEAL,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
+    bottom: theme.space.lg + theme.space.sm,
   },
   sealPressed: {
     opacity: theme.opacity.pressed,
   },
-  mastery: {
+  cueLink: {
+    marginTop: theme.space.xs,
+    minHeight: 32,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: theme.space.sm,
-    marginTop: theme.space.lg,
+    justifyContent: 'center',
+    gap: theme.space.xs,
+  },
+  cueLinkText: {
+    color: theme.color.leafDark,
+    fontSize: theme.font.caption,
+    fontWeight: '700',
   },
   heart: {
     position: 'absolute',
@@ -691,12 +681,5 @@ const styles = StyleSheet.create({
     color: theme.color.ink,
     fontFamily: theme.font.heading,
     fontSize: theme.font.body,
-  },
-  celebration: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: theme.space.xl * 3,
-    alignItems: 'center',
   },
 });

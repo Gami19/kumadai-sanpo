@@ -12,4 +12,4 @@
 node scripts/prepare-stamp-artwork.mjs <建物id>
 ```
 
-背景の塗り path を除き、viewBox を付け、最適化版と `src/components/stamp/artwork/<id>.ts` を書き出す。レジストリに1行追加する。
+白の塗り path だけ除き、インクの外接に viewBox を付け、SVGO する（path を1本にまとめない。穴が潰れる）。`src/components/stamp/artwork/<id>.ts` を書き出し、レジストリに1行追加する。
