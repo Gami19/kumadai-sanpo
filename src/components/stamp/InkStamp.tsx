@@ -48,7 +48,7 @@ export function InkStamp({ frame, kanji, arc, mark, ink, accent, ornate = false,
   const bottom = captionGlyphs(frame, CAMPUS_LABEL, 'bottom');
 
   return (
-    <StampLanding pop={pop}>
+    <StampLanding pop={pop} size={size}>
       <Svg
         width={size}
         height={size}

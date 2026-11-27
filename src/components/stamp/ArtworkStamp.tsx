@@ -32,31 +32,32 @@ export function ArtworkStamp({ artwork, size, pop = false }: Props) {
   const shiftY = (artwork.height / 2 - artwork.centroidY) * scale;
 
   return (
-    <StampLanding pop={pop}>
-      <View style={[styles.cell, { width: size, height: size }]} accessible={false}>
-        <View
-          style={{
+    <StampLanding pop={pop} size={size}>
+      <View
+        accessible={false}
+        style={[
+          styles.ink,
+          {
             width,
             height,
             transform: [{ translateX: shiftX }, { translateY: shiftY }],
-          }}
-        >
-          <SvgXml
-            xml={artwork.xml}
-            width={width}
-            height={height}
-            preserveAspectRatio="xMidYMid meet"
-          />
-        </View>
+          },
+        ]}
+      >
+        <SvgXml
+          xml={artwork.xml}
+          width={width}
+          height={height}
+          preserveAspectRatio="xMidYMid meet"
+        />
       </View>
     </StampLanding>
   );
 }
 
 const styles = StyleSheet.create({
-  cell: {
+  ink: {
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'visible',
   },
 });
