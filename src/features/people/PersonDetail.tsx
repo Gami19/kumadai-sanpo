@@ -14,6 +14,11 @@ import { spots } from '@/features/map/spots';
 import type { Building } from '@/lib/content/buildings';
 import { useBuildings } from '@/lib/content/useBuildings';
 import type { Person } from '@/lib/content/people';
+import {
+  isKnownPersonField,
+  lifeSpanAccessibilityLabel,
+  lifeSpanLabel,
+} from '@/lib/content/personDisplay';
 import { usePeople } from '@/lib/content/usePeople';
 import { haptics } from '@/lib/haptics';
 import { theme } from '@/theme/tokens';
@@ -25,12 +30,8 @@ type Props = {
 const PERIOD_CHIP_MAX = 36;
 const CHIP_LINE = 18;
 
-function known(value: string): boolean {
-  return value.length > 0 && value !== '未確認';
-}
-
 function periodChip(period: string): string | null {
-  if (!known(period)) {
+  if (!isKnownPersonField(period)) {
     return null;
   }
   const end = period.indexOf('。');
@@ -42,7 +43,7 @@ function periodChip(period: string): string | null {
 }
 
 function periodRest(period: string, chip: string | null): string | null {
-  if (!known(period)) {
+  if (!isKnownPersonField(period)) {
     return null;
   }
   if (chip == null) {
@@ -54,7 +55,7 @@ function periodRest(period: string, chip: string | null): string | null {
 
 function personMore(person: Person): string[] {
   const more: string[] = [];
-  if (person.role.length > CHIP_LINE) {
+  if (isKnownPersonField(person.role) && person.role.length > CHIP_LINE) {
     more.push(person.role);
   }
   more.push(...person.facts);
@@ -62,7 +63,7 @@ function personMore(person: Person): string[] {
   if (rest != null) {
     more.push(rest);
   }
-  if (person.predecessorSchool.length > CHIP_LINE) {
+  if (isKnownPersonField(person.predecessorSchool) && person.predecessorSchool.length > CHIP_LINE) {
     more.push(person.predecessorSchool);
   }
   return more;
@@ -104,26 +105,19 @@ function UnknownPerson() {
 
 function PersonBody({ person }: { person: Person }) {
   const chip = periodChip(person.period);
-  const school = person.predecessorSchool;
-  const schoolLong = school.length > CHIP_LINE;
+  const school = isKnownPersonField(person.predecessorSchool) ? person.predecessorSchool : null;
+  const schoolLong = school != null && school.length > CHIP_LINE;
+  const role = isKnownPersonField(person.role) ? person.role : null;
+  const hasChips = school != null || chip != null;
 
   return (
     <View style={styles.page}>
       <View style={styles.identity}>
         <NameSeal name={person.name} size={96} />
-        <Text
-          selectable
-          style={styles.name}
-          accessibilityLabel={known(person.reading) ? person.name : `${person.name}。読みは未確認`}
-        >
+        <Text selectable style={styles.name} accessibilityLabel={person.name}>
           {person.name}
-          {known(person.reading) ? null : (
-            <Text style={styles.mark} accessibilityLabel="読みは未確認">
-              {' ?'}
-            </Text>
-          )}
         </Text>
-        {known(person.reading) ? (
+        {isKnownPersonField(person.reading) ? (
           <Text selectable style={styles.reading}>
             {person.reading}
           </Text>
@@ -133,29 +127,34 @@ function PersonBody({ person }: { person: Person }) {
             {person.nameAlt}
           </Text>
         ) : null}
-        <Text style={styles.role} numberOfLines={1} accessibilityLabel={person.role}>
-          {person.role}
-        </Text>
-      </View>
-      <LifeLine birth={person.birthYear} death={person.deathYear} />
-      <View style={styles.chips}>
-        {known(school) ? (
-          <FactChip
-            icon="mappin"
-            label={school}
-            accessibilityLabel={school}
-            wide={schoolLong}
-            lines={schoolLong ? 1 : undefined}
-          />
-        ) : (
-          <FactChip icon="mappin" label="?" mark accessibilityLabel="ゆかりの学校は未確認" />
-        )}
-        {chip != null ? (
-          <FactChip icon="calendar" label={chip} accessibilityLabel={chip} wide={chip.length > CHIP_LINE} />
-        ) : !known(person.period) ? (
-          <FactChip icon="calendar" label="?" mark accessibilityLabel="在籍期間は未確認" />
+        {role != null ? (
+          <Text style={styles.role} numberOfLines={1} accessibilityLabel={role}>
+            {role}
+          </Text>
         ) : null}
       </View>
+      <LifeLine birth={person.birthYear} death={person.deathYear} />
+      {hasChips ? (
+        <View style={styles.chips}>
+          {school != null ? (
+            <FactChip
+              icon="mappin"
+              label={school}
+              accessibilityLabel={school}
+              wide={schoolLong}
+              lines={schoolLong ? 1 : undefined}
+            />
+          ) : null}
+          {chip != null ? (
+            <FactChip
+              icon="calendar"
+              label={chip}
+              accessibilityLabel={chip}
+              wide={chip.length > CHIP_LINE}
+            />
+          ) : null}
+        </View>
+      ) : null}
       <ExpandableText key={person.summary} text={person.summary} more={personMore(person)} />
       <RelatedBuildings ids={person.relatedBuildingIds} />
       <SourceButton sources={person.sources} />
@@ -163,29 +162,38 @@ function PersonBody({ person }: { person: Person }) {
   );
 }
 
+/**
+ * 年表。欠けた側は「？」にせず、自然に閉じる。
+ * 両方あればバー、片方だけなら短いラベルだけ。どちらも無ければ出さない。
+ */
 function LifeLine({ birth, death }: { birth: string; death: string }) {
-  const birthKnown = known(birth);
-  const deathKnown = known(death);
+  const birthKnown = isKnownPersonField(birth);
+  const deathKnown = isKnownPersonField(death);
+  const label = lifeSpanLabel(birth, death);
+  const a11y = lifeSpanAccessibilityLabel(birth, death);
+  if (label == null || a11y == null) {
+    return null;
+  }
+
+  if (birthKnown && deathKnown) {
+    return (
+      <View accessible accessibilityRole="text" accessibilityLabel={a11y} style={styles.life}>
+        <View style={styles.lifeEnds} importantForAccessibility="no-hide-descendants">
+          <Text style={styles.year}>{birth}</Text>
+          <Text style={styles.year}>{death}</Text>
+        </View>
+        <View style={styles.lifeBar} importantForAccessibility="no-hide-descendants">
+          <View style={[styles.dot, styles.dotOn]} />
+          <View style={styles.rule} />
+          <View style={[styles.dot, styles.dotOn]} />
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View
-      accessible
-      accessibilityRole="text"
-      accessibilityLabel={`生年${birthKnown ? birth : '未確認'}、没年${deathKnown ? death : '未確認'}`}
-      style={styles.life}
-    >
-      <View style={styles.lifeEnds} importantForAccessibility="no-hide-descendants">
-        <Text style={[styles.year, birthKnown ? null : styles.yearUnknown]}>
-          {birthKnown ? birth : '?'}
-        </Text>
-        <Text style={[styles.year, deathKnown ? null : styles.yearUnknown]}>
-          {deathKnown ? death : '?'}
-        </Text>
-      </View>
-      <View style={styles.lifeBar} importantForAccessibility="no-hide-descendants">
-        <View style={[styles.dot, birthKnown ? styles.dotOn : styles.dotOff]} />
-        <View style={styles.rule} />
-        <View style={[styles.dot, deathKnown ? styles.dotOn : styles.dotOff]} />
-      </View>
+    <View accessible accessibilityRole="text" accessibilityLabel={a11y} style={styles.lifeClosed}>
+      <Text style={styles.year}>{label}</Text>
     </View>
   );
 }
@@ -290,11 +298,6 @@ const styles = StyleSheet.create({
     lineHeight: theme.font.caption + theme.space.xs,
     textAlign: 'center',
   },
-  mark: {
-    color: theme.color.brick,
-    fontFamily: theme.font.heading,
-    fontSize: theme.font.body,
-  },
   role: {
     alignSelf: 'stretch',
     color: theme.color.ink,
@@ -304,6 +307,9 @@ const styles = StyleSheet.create({
   },
   life: {
     gap: theme.space.xs,
+  },
+  lifeClosed: {
+    alignItems: 'center',
   },
   lifeEnds: {
     flexDirection: 'row',
@@ -320,9 +326,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
   },
-  yearUnknown: {
-    color: theme.color.brick,
-  },
   rule: {
     flex: 1,
     height: theme.border.mark,
@@ -335,11 +338,6 @@ const styles = StyleSheet.create({
   },
   dotOn: {
     backgroundColor: theme.color.brick,
-  },
-  dotOff: {
-    borderWidth: theme.border.mark,
-    borderColor: theme.color.brick,
-    backgroundColor: theme.color.paper,
   },
   chips: {
     flexDirection: 'row',

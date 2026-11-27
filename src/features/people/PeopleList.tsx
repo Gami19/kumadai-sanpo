@@ -4,8 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/Icon';
 import { NameSeal } from '@/components/NameSeal';
-import { haptics } from '@/lib/haptics';
+import { isKnownPersonField, lifeSpanLabel } from '@/lib/content/personDisplay';
 import { usePeople } from '@/lib/content/usePeople';
+import { haptics } from '@/lib/haptics';
 import { theme } from '@/theme/tokens';
 
 export function PeopleList() {
@@ -17,33 +18,45 @@ export function PeopleList() {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.space.xl }]}
     >
-      {people.map((person, index) => (
-        <Pressable
-          key={person.id}
-          accessibilityRole="button"
-          accessibilityLabel={`${person.name}。${person.role}`}
-          onPress={() => {
-            haptics.select();
-            router.push({ pathname: '/people/[id]', params: { id: person.id } });
-          }}
-          style={({ pressed }) => [
-            styles.row,
-            index < people.length - 1 ? styles.separator : null,
-            pressed && styles.pressed,
-          ]}
-        >
-          <NameSeal name={person.name} />
-          <View style={styles.copy}>
-            <Text style={styles.name} numberOfLines={1}>
-              {person.name}
-            </Text>
-            <Text style={styles.role} numberOfLines={1}>
-              {person.role}
-            </Text>
-          </View>
-          <Icon name="chevron.right" size={18} color={theme.color.inkMuted} />
-        </Pressable>
-      ))}
+      {people.map((person, index) => {
+        const role = isKnownPersonField(person.role) ? person.role : null;
+        const life = lifeSpanLabel(person.birthYear, person.deathYear);
+        const a11y = [person.name, role, life].filter((part): part is string => part != null).join('。');
+        return (
+          <Pressable
+            key={person.id}
+            accessibilityRole="button"
+            accessibilityLabel={a11y}
+            onPress={() => {
+              haptics.select();
+              router.push({ pathname: '/people/[id]', params: { id: person.id } });
+            }}
+            style={({ pressed }) => [
+              styles.row,
+              index < people.length - 1 ? styles.separator : null,
+              pressed && styles.pressed,
+            ]}
+          >
+            <NameSeal name={person.name} />
+            <View style={styles.copy}>
+              <Text style={styles.name} numberOfLines={1}>
+                {person.name}
+              </Text>
+              {role != null ? (
+                <Text style={styles.role} numberOfLines={1}>
+                  {role}
+                </Text>
+              ) : null}
+              {life != null ? (
+                <Text style={styles.life} numberOfLines={1}>
+                  {life}
+                </Text>
+              ) : null}
+            </View>
+            <Icon name="chevron.right" size={18} color={theme.color.inkMuted} />
+          </Pressable>
+        );
+      })}
     </ScrollView>
   );
 }
@@ -79,5 +92,10 @@ const styles = StyleSheet.create({
   role: {
     color: theme.color.inkMuted,
     fontSize: theme.font.caption,
+  },
+  life: {
+    color: theme.color.inkMuted,
+    fontSize: theme.font.caption,
+    fontVariant: ['tabular-nums'],
   },
 });

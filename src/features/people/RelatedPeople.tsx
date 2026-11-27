@@ -2,8 +2,9 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { NameSeal } from '@/components/NameSeal';
-import { haptics } from '@/lib/haptics';
+import { isKnownPersonField, lifeSpanLabel } from '@/lib/content/personDisplay';
 import { usePeople } from '@/lib/content/usePeople';
+import { haptics } from '@/lib/haptics';
 import { theme } from '@/theme/tokens';
 
 type Props = {
@@ -31,26 +32,38 @@ export function RelatedPeople({ personIds }: Props) {
       style={styles.bleed}
       contentContainerStyle={styles.row}
     >
-      {linked.map((person) => (
-        <Pressable
-          key={person.id}
-          accessibilityRole="button"
-          accessibilityLabel={`${person.name}。${person.role}`}
-          onPress={() => {
-            haptics.select();
-            router.push({ pathname: '/people/[id]', params: { id: person.id } });
-          }}
-          style={({ pressed }) => [styles.card, pressed && styles.pressed]}
-        >
-          <NameSeal name={person.name} size={56} />
-          <Text style={styles.name} numberOfLines={2}>
-            {person.name}
-          </Text>
-          <Text style={styles.role} numberOfLines={1}>
-            {person.role}
-          </Text>
-        </Pressable>
-      ))}
+      {linked.map((person) => {
+        const role = isKnownPersonField(person.role) ? person.role : null;
+        const life = lifeSpanLabel(person.birthYear, person.deathYear);
+        const a11y = [person.name, role, life].filter((part): part is string => part != null).join('。');
+        return (
+          <Pressable
+            key={person.id}
+            accessibilityRole="button"
+            accessibilityLabel={a11y}
+            onPress={() => {
+              haptics.select();
+              router.push({ pathname: '/people/[id]', params: { id: person.id } });
+            }}
+            style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+          >
+            <NameSeal name={person.name} size={56} />
+            <Text style={styles.name} numberOfLines={2}>
+              {person.name}
+            </Text>
+            {role != null ? (
+              <Text style={styles.role} numberOfLines={1}>
+                {role}
+              </Text>
+            ) : null}
+            {life != null ? (
+              <Text style={styles.life} numberOfLines={1}>
+                {life}
+              </Text>
+            ) : null}
+          </Pressable>
+        );
+      })}
     </ScrollView>
   );
 }
@@ -90,6 +103,14 @@ const styles = StyleSheet.create({
     color: theme.color.inkMuted,
     fontSize: theme.font.caption,
     lineHeight: theme.font.caption + theme.space.xs,
+    textAlign: 'center',
+  },
+  life: {
+    alignSelf: 'stretch',
+    color: theme.color.inkMuted,
+    fontSize: theme.font.caption,
+    lineHeight: theme.font.caption + theme.space.xs,
+    fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
 });
